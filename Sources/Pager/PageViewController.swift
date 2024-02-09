@@ -2,7 +2,7 @@ import UIKit
 
 public protocol PageTabBarDataSource: AnyObject {
     @MainActor
-    func barItem(for bar: PageTabBar, at index: Int) -> String
+    func barItem(for bar: PageTabBar, at index: Int) -> any PageTabBarItem
 }
 
 protocol PageTabBarDelegate: AnyObject {

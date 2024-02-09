@@ -32,12 +32,12 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
         reloadData()
     }
     
-    func barItem(for bar: Pager.PageTabBar, at index: Int) -> String {
-        "\(index)"
+    func barItem(for bar: PageTabBar, at index: Int) -> any PageTabBarItem {
+        DefaultPageTabBarItem(title: "\(index)")
     }
     
     func numberOfViewControllers(in pageViewController: Pager.PageViewController) -> Int {
-        3
+        5
     }
     
     func viewController(for pageViewController: Pager.PageViewController, at index: Int) -> UIViewController? {
