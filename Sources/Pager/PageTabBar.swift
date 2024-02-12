@@ -5,7 +5,7 @@ public final class PageTabBar: UIStackView {
     public override init(frame: CGRect) {
         super.init(frame: frame)
         axis = .horizontal
-        
+        spacing = UIStackView.spacingUseSystem
         addSubview(indicatorView)
     }
     
