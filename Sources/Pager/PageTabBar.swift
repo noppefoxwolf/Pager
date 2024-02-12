@@ -42,7 +42,10 @@ public final class PageTabBar: UIStackView {
         }
     }
     
+    var previousPosition: Double = 0
     func setIndicator(_ position: Double) {
+        previousPosition = position
+        
         let prevIndex = Int(floor(position))
         let currentIndex = Int(ceil(position))
         let fractionCompleted = position - floor(position)
@@ -76,5 +79,11 @@ public final class PageTabBar: UIStackView {
     func button(at index: Int) -> UIButton? {
         guard arrangedSubviews.indices.contains(index) else { return nil }
         return (arrangedSubviews[index] as? UIButton)
+    }
+    
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+        // On change SplitView width.
+        setIndicator(previousPosition)
     }
 }
