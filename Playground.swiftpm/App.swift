@@ -32,16 +32,23 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
         reloadData()
     }
     
+    var items = [
+        "Following",
+        "Local",
+        "Global",
+        "#ios_developers",
+    ]
+    
     func barItem(for bar: PageTabBar, at index: Int) -> any PageTabBarItem {
-        DefaultPageTabBarItem(title: "\(index)")
+        DefaultPageTabBarItem(title: items[index])
     }
     
     func numberOfViewControllers(in pageViewController: Pager.PageViewController) -> Int {
-        5
+        items.count
     }
     
     func viewController(for pageViewController: Pager.PageViewController, at index: Int) -> UIViewController? {
-        UIHostingController(rootView: Text("\(index)"))
+        UIHostingController(rootView: Text(items[index]))
     }
 }
 
