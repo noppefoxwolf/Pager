@@ -3,11 +3,12 @@ import UIKit
 open class PageViewController: UICollectionViewController {
     public weak var dataSource: (any PageViewControllerDataSource)? = nil
     public let pageTabBar = PageTabBar()
+    var hostedViewControllers: Set<UIViewController> = []
 
     public init() {
         super.init(collectionViewLayout: UICollectionViewLayout())
     }
-
+    
     required public init?(coder: NSCoder) {
         super.init(coder: coder)
     }
@@ -71,8 +72,10 @@ open class PageViewController: UICollectionViewController {
 
             viewController.willMove(toParent: self)
             addChild(viewController)
+            hostedViewControllers.insert(viewController)
             cell.contentView.addSubview(viewController.view)
             viewController.didMove(toParent: self)
+            
             viewController.view.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
                 viewController.view.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
@@ -89,6 +92,8 @@ open class PageViewController: UICollectionViewController {
     }
 
     public func reloadData() {
+        hostedViewControllers.forEach({ $0.removeFromParent() })
+        hostedViewControllers = []
         collectionView.reloadData()
         pageTabBar.reloadData(dataSource?.numberOfViewControllers(in: self) ?? 0)
     }

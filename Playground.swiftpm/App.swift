@@ -45,7 +45,9 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
         DefaultPageTabBarItem(title: items[index])
     }
     
-    func numberOfViewControllers(in pageViewController: Pager.PageViewController) -> Int {
+    func numberOfViewControllers(
+        in pageViewController: Pager.PageViewController
+    ) -> Int {
         items.count
     }
     
