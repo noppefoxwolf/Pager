@@ -53,7 +53,11 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
         for pageViewController: Pager.PageViewController,
         at index: Int
     ) -> UIViewController? {
-        ChildViewController(text: items[index])
+        if items.indices.contains(index) {
+            ChildViewController(text: items[index])
+        } else {
+            nil
+        }
     }
 }
 
