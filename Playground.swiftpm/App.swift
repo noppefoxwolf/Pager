@@ -49,7 +49,10 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
         items.count
     }
     
-    func viewController(for pageViewController: Pager.PageViewController, at index: Int) -> UIViewController? {
+    func viewController(
+        for pageViewController: Pager.PageViewController,
+        at index: Int
+    ) -> UIViewController? {
         ChildViewController(text: items[index])
     }
 }
