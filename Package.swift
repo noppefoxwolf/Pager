@@ -7,18 +7,36 @@ let package = Package(
     name: "Pager",
     platforms: [.iOS(.v16)],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "Pager",
-            targets: ["Pager"]),
+            targets: ["Pager"]
+        ),
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "Pager"),
+            name: "Pager"
+        ),
         .testTarget(
             name: "PagerTests",
-            dependencies: ["Pager"]),
+            dependencies: ["Pager"]
+        ),
     ]
 )
+
+let swiftSettings: [SwiftSetting] = [
+    .enableUpcomingFeature("ForwardTrailingClosures"),
+    .enableUpcomingFeature("ExistentialAny"),
+    .enableUpcomingFeature("BareSlashRegexLiterals"),
+    .enableUpcomingFeature("ConciseMagicFile"),
+    .enableUpcomingFeature("ImportObjcForwardDeclarations"),
+    .enableUpcomingFeature("DisableOutwardActorInference"),
+    .enableUpcomingFeature("DeprecateApplicationMain"),
+    .enableUpcomingFeature("IsolatedDefaultValues"),
+    .enableUpcomingFeature("GlobalConcurrency"),
+]
+
+package.targets.forEach { target in
+    target.swiftSettings = target.swiftSettings ?? []
+    target.swiftSettings?.append(contentsOf: swiftSettings)
+}
+

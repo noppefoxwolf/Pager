@@ -1,28 +1,5 @@
 import UIKit
 
-public protocol PageTabBarDataSource: AnyObject {
-    @MainActor
-    func barItem(for bar: PageTabBar, at index: Int) -> any PageTabBarItem
-}
-
-protocol PageTabBarDelegate: AnyObject {
-    @MainActor
-    func pageTabBar(_ pageTabBar: PageTabBar, didSelected index: Int)
-}
-
-public protocol PageViewControllerDataSource: AnyObject {
-    @MainActor
-    func numberOfViewControllers(
-        in pageViewController: PageViewController
-    ) -> Int
-
-    @MainActor
-    func viewController(
-        for pageViewController: PageViewController,
-        at index: Int
-    ) -> UIViewController?
-}
-
 open class PageViewController: UICollectionViewController {
     public weak var dataSource: (any PageViewControllerDataSource)? = nil
     public let pageTabBar = PageTabBar()
@@ -107,7 +84,6 @@ open class PageViewController: UICollectionViewController {
                     equalTo: viewController.view.trailingAnchor
                 ),
             ])
-
         }
         return cell
     }

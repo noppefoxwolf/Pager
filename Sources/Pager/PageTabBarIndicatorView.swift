@@ -1,6 +1,6 @@
 import UIKit
 
-class PageTabBarIndicatorView: UIView {
+final class PageTabBarIndicatorView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .tintColor
