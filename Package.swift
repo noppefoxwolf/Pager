@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -22,21 +22,3 @@ let package = Package(
         ),
     ]
 )
-
-let swiftSettings: [SwiftSetting] = [
-    .enableUpcomingFeature("ForwardTrailingClosures"),
-    .enableUpcomingFeature("ExistentialAny"),
-    .enableUpcomingFeature("BareSlashRegexLiterals"),
-    .enableUpcomingFeature("ConciseMagicFile"),
-    .enableUpcomingFeature("ImportObjcForwardDeclarations"),
-    .enableUpcomingFeature("DisableOutwardActorInference"),
-    .enableUpcomingFeature("DeprecateApplicationMain"),
-    .enableUpcomingFeature("IsolatedDefaultValues"),
-    .enableUpcomingFeature("GlobalConcurrency"),
-]
-
-package.targets.forEach { target in
-    target.swiftSettings = target.swiftSettings ?? []
-    target.swiftSettings?.append(contentsOf: swiftSettings)
-}
-
