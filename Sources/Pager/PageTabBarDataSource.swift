@@ -1,6 +1,7 @@
-import Foundation
+import UIKit
 
+@MainActor
 public protocol PageTabBarDataSource: AnyObject {
-    @MainActor
-    func barItem(for bar: PageTabBar, at index: Int) -> any PageTabBarItem
+    func numberOfItems(in bar: PageTabBar) -> Int
+    func pageTabBar(_ bar: PageTabBar, controlForItemAt index: Int) -> UIControl
 }

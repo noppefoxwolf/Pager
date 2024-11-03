@@ -18,21 +18,22 @@ public final class PageTabBar: UIStackView {
     
     let indicatorView = PageTabBarIndicatorView()
     
-    func reloadData(_ count: Int) {
+    func reloadData() {
         arrangedSubviews.forEach({
             removeArrangedSubview($0)
             $0.removeFromSuperview()
         })
+        
+        let count = dataSource?.numberOfItems(in: self) ?? 0
         for i in 0..<count {
-            if let barItem = dataSource?.barItem(for: self, at: i) {
-                let button = barItem.makeButton()
-                button.addAction(
+            if let control = dataSource?.pageTabBar(self, controlForItemAt: i) {
+                control.addAction(
                     UIAction { [unowned self, i] _ in
                         delegate?.pageTabBar(self, didSelected: i)
                     },
                     for: .primaryActionTriggered
                 )
-                addArrangedSubview(button)
+                addArrangedSubview(control)
             }
         }
         if count > 3 {

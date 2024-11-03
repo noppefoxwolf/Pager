@@ -95,7 +95,7 @@ open class PageViewController: UICollectionViewController {
         hostedViewControllers.forEach({ $0.removeFromParent() })
         hostedViewControllers = []
         collectionView.reloadData()
-        pageTabBar.reloadData(dataSource?.numberOfViewControllers(in: self) ?? 0)
+        pageTabBar.reloadData()
     }
 }
 

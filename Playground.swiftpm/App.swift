@@ -41,8 +41,12 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
     
     var items: [String] = []
     
-    func barItem(for bar: PageTabBar, at index: Int) -> any PageTabBarItem {
-        DefaultPageTabBarItem(title: items[index])
+    func numberOfItems(in bar: PageTabBar) -> Int {
+        items.count
+    }
+    
+    func pageTabBar(_ bar: PageTabBar, controlForItemAt index: Int) -> UIControl {
+        DefaultPageTabBarItem(title: items[index]).makeButton()
     }
     
     func numberOfViewControllers(
