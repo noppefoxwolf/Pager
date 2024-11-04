@@ -1,90 +1,111 @@
 import UIKit
+import ProportionalLayout
+import LabelContentConfiguration
+import os
 
-public final class PageTabBar: UIStackView {
+public final class PageTabBar: UICollectionView {
+    let indicatorView = PageTabBarIndicatorView()
+    weak var tabBarDelegate: (any PageTabBarDelegate)? = nil
+    public weak var tabBarDataSource: (any PageTabBarDataSource)? = nil
     
-    public override init(frame: CGRect) {
-        super.init(frame: frame)
-        axis = .horizontal
-        spacing = UIStackView.spacingUseSystem
+    let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier!,
+        category: #file
+    )
+    
+    public init() {
+        super.init(frame: .null, collectionViewLayout: ProportionalCollectionViewLayout())
+        delegate = self
+        dataSource = self
+        showsHorizontalScrollIndicator = false
+        showsVerticalScrollIndicator = false
+        
         addSubview(indicatorView)
     }
     
-    required init(coder: NSCoder) {
+    required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public weak var dataSource: (any PageTabBarDataSource)? = nil
-    weak var delegate: (any PageTabBarDelegate)? = nil
-    
-    let indicatorView = PageTabBarIndicatorView()
-    
-    func reloadData() {
-        arrangedSubviews.forEach({
-            removeArrangedSubview($0)
-            $0.removeFromSuperview()
-        })
-        
-        let count = dataSource?.numberOfItems(in: self) ?? 0
-        for i in 0..<count {
-            if let control = dataSource?.pageTabBar(self, controlForItemAt: i) {
-                control.addAction(
-                    UIAction { [unowned self, i] _ in
-                        delegate?.pageTabBar(self, didSelected: i)
-                    },
-                    for: .primaryActionTriggered
-                )
-                addArrangedSubview(control)
-            }
+    let cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, String>(
+        handler: { cell, indexPath, text in
+            var contentConfiguration = cell.labelConfiguration()
+            contentConfiguration.text = text
+            contentConfiguration.textProperties = .init({ [weak cell] attributeContainer in
+                var attributeContainer = attributeContainer
+                if cell?.configurationState.isSelected == true {
+                    attributeContainer.foregroundColor = UIColor.label
+                } else {
+                    attributeContainer.foregroundColor = UIColor.placeholderText
+                }
+                return attributeContainer
+            })
+            cell.contentConfiguration = contentConfiguration
         }
-        if count > 3 {
-            distribution = .fillProportionally
-        } else {
-            distribution = .fillEqually
-        }
+    )
+}
+
+extension PageTabBar: UICollectionViewDataSource {
+    public func collectionView(
+        _ collectionView: UICollectionView,
+        numberOfItemsInSection section: Int
+    ) -> Int {
+        tabBarDataSource?.numberOfItems(in: self) ?? 0
     }
     
-    var previousPosition: Double = 0
+    public func collectionView(
+        _ collectionView: UICollectionView,
+        cellForItemAt indexPath: IndexPath
+    ) -> UICollectionViewCell {
+        let item = tabBarDataSource?.pageTabBar(self, controlForItemAt: indexPath.row) ?? ""
+        return collectionView.dequeueConfiguredReusableCell(
+            using: cellRegistration,
+            for: indexPath,
+            item: item
+        )
+    }
+    
     func setIndicator(_ position: Double) {
-        previousPosition = position
+        logger.debug("setIndicator: \(position)")
+        let section = 0
         
         let prevIndex = Int(floor(position))
         let currentIndex = Int(ceil(position))
         let fractionCompleted = position - floor(position)
         
         let focusIndex = Int(position.rounded())
-        arrangedSubviews
-            .compactMap({ $0 as? UIButton })
-            .enumerated()
-            .forEach { (index, button) in
-                let color: UIColor = index == focusIndex ? .label : .placeholderText
-                button.setTitleColor(color, for: .normal)
-            }
+        if rowSequence(for: section).contains(focusIndex) {
+            let indexPath = IndexPath(row: focusIndex, section: section)
+            selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
+        }
         
-        let prevButton = button(at: prevIndex)
-        let currentButton = button(at: currentIndex)
-        
-        let prevWidth = max(prevButton?.titleLabel?.bounds.width ?? 0, 44)
-        let prevCenter = prevButton?.center ?? .zero
-        let currentWidth = max(currentButton?.titleLabel?.bounds.width ?? 0, 44)
-        let currentCenter = currentButton?.center ?? .zero
-        
+        let prevCell = cellForItem(at: IndexPath(row: prevIndex, section: section))
+        let currentCell = cellForItem(at: IndexPath(row: currentIndex, section: section))
+        let prevLabel = prevCell?.contentView.subviews.first(where: { $0 is UILabel })
+        let currentLabel = currentCell?.contentView.subviews.first(where: { $0 is UILabel })
+
+        let prevWidth = prevLabel?.bounds.width ?? 0
+        let prevCenter = prevCell?.center ?? .zero
+        let currentWidth = currentLabel?.bounds.width ?? 0
+        let currentCenter = currentCell?.center ?? .zero
+        logger.debug("prevWidth: \(prevWidth) currentWidth: \(currentWidth)")
+
         indicatorView.frame.size.width =
         prevWidth + ((currentWidth - prevWidth) * fractionCompleted)
         indicatorView.frame.size.height = 4
         indicatorView.frame.origin.y = bounds.height - 4
-        
+
         indicatorView.center.x =
         prevCenter.x + ((currentCenter.x - prevCenter.x) * fractionCompleted)
     }
-    
-    func button(at index: Int) -> UIButton? {
-        guard arrangedSubviews.indices.contains(index) else { return nil }
-        return (arrangedSubviews[index] as? UIButton)
-    }
-    
-    public override func layoutSubviews() {
-        super.layoutSubviews()
-        // On change SplitView width.
-        setIndicator(previousPosition)
+}
+
+extension PageTabBar: UICollectionViewDelegate {
+    public func collectionView(
+        _ collectionView: UICollectionView,
+        didSelectItemAt indexPath: IndexPath
+    ) {
+        tabBarDelegate?.pageTabBar(self, didSelected: indexPath.row)
     }
 }
+

@@ -24,17 +24,40 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
     override func viewDidLoad() {
         super.viewDidLoad()
         dataSource = self
-        pageTabBar.dataSource = self
+        pageTabBar.tabBarDataSource = self
         
         navigationItem.title = "Pager Example"
+        pageTabBar.frame = CGRect(x: 0, y: 0, width: 0, height: 34)
         navigationItem.setBottomPalette(pageTabBar)
         
-        let stepper = UIStepper(frame: .null, primaryAction: UIAction { action in
-            let stepper = action.sender as! UIStepper
-            self.items = (0..<Int(stepper.value.rounded())).map({ "\($0)" })
-            self.reloadData()
-        })
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: stepper)
+        let decrementButton = UIBarButtonItem(
+            image: UIImage(systemName: "minus"),
+            primaryAction: UIAction { [unowned self] _ in
+                if !items.isEmpty {
+                    items.removeLast()
+                }
+                self.reloadData()
+            }
+        )
+        let incrementButton = UIBarButtonItem(
+            image: UIImage(systemName: "plus"),
+            primaryAction: UIAction { [unowned self] _ in
+                // random length words
+                let phrases: [String] = [
+                    "Pager",
+                    "SwiftUI",
+                    "SwiftUI Pager",
+                    "SwiftUI Pager Example",
+                ]
+                items.append(phrases.randomElement()!)
+                self.reloadData()
+            }
+        )
+        
+        navigationItem.rightBarButtonItems = [
+            incrementButton,
+            decrementButton,
+        ]
         
         reloadData()
     }
@@ -45,8 +68,9 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
         items.count
     }
     
-    func pageTabBar(_ bar: PageTabBar, controlForItemAt index: Int) -> UIControl {
-        DefaultPageTabBarItem(title: items[index]).makeButton()
+    func pageTabBar(_ bar: PageTabBar, controlForItemAt index: Int) -> String {
+        //DefaultPageTabBarItem(title: items[index]).makeButton()
+        items[index]
     }
     
     func numberOfViewControllers(

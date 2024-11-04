@@ -4,7 +4,7 @@ open class PageViewController: UICollectionViewController {
     public weak var dataSource: (any PageViewControllerDataSource)? = nil
     public let pageTabBar = PageTabBar()
     var hostedViewControllers: Set<UIViewController> = []
-
+    
     public init() {
         super.init(collectionViewLayout: UICollectionViewLayout())
     }
@@ -42,8 +42,9 @@ open class PageViewController: UICollectionViewController {
 
     open override func viewDidLoad() {
         super.viewDidLoad()
+        
         pageTabBar.frame.size.height = 34
-        pageTabBar.delegate = self
+        pageTabBar.tabBarDelegate = self
     }
 
     open override func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -96,6 +97,13 @@ open class PageViewController: UICollectionViewController {
         hostedViewControllers = []
         collectionView.reloadData()
         pageTabBar.reloadData()
+        // workaround:
+        // https://stackoverflow.com/a/30668519
+        pageTabBar.performBatchUpdates(nil) { [weak pageTabBar] _ in
+            if let indexPath = pageTabBar?.indexPathsForSelectedItems?.first {
+                pageTabBar?.setIndicator(Double(indexPath.row))
+            }
+        }
     }
 }
 
