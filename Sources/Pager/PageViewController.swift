@@ -79,12 +79,12 @@ open class PageViewController: UICollectionViewController {
             
             viewController.view.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
-                viewController.view.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
-                cell.contentView.bottomAnchor.constraint(equalTo: viewController.view.bottomAnchor),
+                viewController.view.topAnchor.constraint(equalTo: cell.contentView.safeAreaLayoutGuide.topAnchor),
+                cell.contentView.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: viewController.view.bottomAnchor),
                 viewController.view.leadingAnchor.constraint(
-                    equalTo: cell.contentView.leadingAnchor
+                    equalTo: cell.contentView.safeAreaLayoutGuide.leadingAnchor
                 ),
-                cell.contentView.trailingAnchor.constraint(
+                cell.contentView.safeAreaLayoutGuide.trailingAnchor.constraint(
                     equalTo: viewController.view.trailingAnchor
                 ),
             ])
@@ -100,9 +100,7 @@ open class PageViewController: UICollectionViewController {
         // workaround:
         // https://stackoverflow.com/a/30668519
         pageTabBar.performBatchUpdates(nil) { [weak pageTabBar] _ in
-            if let indexPath = pageTabBar?.indexPathsForSelectedItems?.first {
-                pageTabBar?.setIndicator(Double(indexPath.row))
-            }
+            pageTabBar?.invalidateIndicatorLayout()
         }
     }
 }
@@ -124,7 +122,7 @@ extension UICollectionViewLayout {
     ) -> UICollectionViewCompositionalLayout {
         let configuration = UICollectionViewCompositionalLayoutConfiguration()
         configuration.scrollDirection = .horizontal
-        configuration.contentInsetsReference = .none
+        configuration.contentInsetsReference = .automatic
         return UICollectionViewCompositionalLayout(
             sectionProvider: { section, environment in
                 let itemSize = NSCollectionLayoutSize(
