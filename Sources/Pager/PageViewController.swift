@@ -96,7 +96,6 @@ open class PageViewController: WorkaroundCollectionViewController {
                 ),
             ])
         }
-        cell.contentView.backgroundColor = UIColor(indexPath)
         return cell
     }
     
@@ -115,18 +114,5 @@ extension PageViewController: PageTabBarDelegate {
             at: .centeredHorizontally,
             animated: true
         )
-    }
-}
-
-
-extension UIColor {
-    convenience init<T: Hashable>(_ value: T) {
-        // RGB値を計算する
-        let red = CGFloat((value.hashValue >> 16) & 0xFF) / 255.0
-        let green = CGFloat((value.hashValue >> 8) & 0xFF) / 255.0
-        let blue = CGFloat(value.hashValue & 0xFF) / 255.0
-        
-        // UIColorを初期化
-        self.init(red: red, green: green, blue: blue, alpha: 1.0)
     }
 }
