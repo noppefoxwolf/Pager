@@ -1,9 +1,15 @@
 import UIKit
+import os
 
-open class PageViewController: UICollectionViewController {
+open class PageViewController: WorkaroundCollectionViewController {
     public weak var dataSource: (any PageViewControllerDataSource)? = nil
     public let pageTabBar = PageTabBar()
     var hostedViewControllers: Set<UIViewController> = []
+    
+    let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier!,
+        category: #file
+    )
     
     public init() {
         super.init(collectionViewLayout: UICollectionViewLayout())
@@ -12,17 +18,17 @@ open class PageViewController: UICollectionViewController {
     required public init?(coder: NSCoder) {
         super.init(coder: coder)
     }
-
+    
     open override func loadView() {
         super.loadView()
-
+        
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.showsVerticalScrollIndicator = false
         collectionView.isPagingEnabled = true
         collectionView.bounces = false
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-
+        
         let layout = UICollectionViewCompositionalLayout.paging(
             visibleItemsInvalidationHandler: { [weak self] (items, point, environment) in
                 self?.onUpdatedPageProgress(point.x / environment.container.contentSize.width)
@@ -30,47 +36,48 @@ open class PageViewController: UICollectionViewController {
         )
         collectionView.setCollectionViewLayout(layout, animated: false)
     }
-
+    
     func onUpdatedPageProgress(_ progress: Double) {
         pageTabBar.setIndicator(progress)
-
+        
         let index = Int(progress + 0.5)
         let vc = dataSource?.viewController(for: self, at: index)
         let sv = vc?.contentScrollView(for: .top) ?? (vc?.view as? UIScrollView)
         setContentScrollView(sv, for: .top)
     }
-
+    
     open override func viewDidLoad() {
         super.viewDidLoad()
         
         pageTabBar.frame.size.height = 34
         pageTabBar.tabBarDelegate = self
     }
-
+    
     open override func numberOfSections(in collectionView: UICollectionView) -> Int {
         dataSource?.numberOfViewControllers(in: self) ?? 0
     }
-
+    
     open override func collectionView(
         _ collectionView: UICollectionView,
         numberOfItemsInSection section: Int
     ) -> Int {
         1
     }
-
+    
     open override func collectionView(
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
         cell.contentView.subviews.forEach({ $0.removeFromSuperview() })
-
+        
         if let viewController = dataSource?.viewController(for: self, at: indexPath.section) {
+            viewController.view.backgroundColor = .clear
             viewController.willMove(toParent: nil)
             viewController.view.removeFromSuperview()
             viewController.removeFromParent()
             viewController.didMove(toParent: nil)
-
+            
             viewController.willMove(toParent: self)
             addChild(viewController)
             hostedViewControllers.insert(viewController)
@@ -89,9 +96,10 @@ open class PageViewController: UICollectionViewController {
                 ),
             ])
         }
+        cell.contentView.backgroundColor = UIColor(indexPath)
         return cell
     }
-
+    
     public func reloadData() {
         hostedViewControllers.forEach({ $0.removeFromParent() })
         hostedViewControllers = []
@@ -110,3 +118,15 @@ extension PageViewController: PageTabBarDelegate {
     }
 }
 
+
+extension UIColor {
+    convenience init<T: Hashable>(_ value: T) {
+        // RGB値を計算する
+        let red = CGFloat((value.hashValue >> 16) & 0xFF) / 255.0
+        let green = CGFloat((value.hashValue >> 8) & 0xFF) / 255.0
+        let blue = CGFloat(value.hashValue & 0xFF) / 255.0
+        
+        // UIColorを初期化
+        self.init(red: red, green: green, blue: blue, alpha: 1.0)
+    }
+}
