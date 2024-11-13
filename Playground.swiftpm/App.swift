@@ -6,6 +6,7 @@ struct App: SwiftUI.App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .ignoresSafeArea()
         }
     }
 }
@@ -24,24 +25,52 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
     override func viewDidLoad() {
         super.viewDidLoad()
         dataSource = self
-        pageTabBar.dataSource = self
+        pageTabBar.tabBarDataSource = self
         
         navigationItem.title = "Pager Example"
-        navigationItem.setBottomPalette(pageTabBar)
+        let palette = NavigationBarPalette(contentView: pageTabBar)
+        palette.setPreferredHeight(34)
+        navigationItem.setBottomPalette(palette)
         
-        let stepper = UIStepper(frame: .null, primaryAction: UIAction { action in
-            let stepper = action.sender as! UIStepper
-            self.items = (0..<Int(stepper.value.rounded())).map({ "\($0)" })
-            self.reloadData()
-        })
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: stepper)
+        let decrementButton = UIBarButtonItem(
+            image: UIImage(systemName: "minus"),
+            primaryAction: UIAction { [unowned self] _ in
+                if !items.isEmpty {
+                    items.removeLast()
+                }
+                self.reloadData()
+            }
+        )
+        let incrementButton = UIBarButtonItem(
+            image: UIImage(systemName: "plus"),
+            primaryAction: UIAction { [unowned self] _ in
+                // random length words
+                let phrases: [String] = [
+                    "Pager",
+                    "SwiftUI",
+                    "SwiftUI Pager",
+                    "SwiftUI Pager Example",
+                ]
+                items.append(phrases.randomElement()!)
+                self.reloadData()
+            }
+        )
+        
+        navigationItem.rightBarButtonItems = [
+            incrementButton,
+            decrementButton,
+        ]
         
         reloadData()
     }
     
     var items: [String] = []
     
-    func barItem(for bar: PageTabBar, at index: Int) -> any PageTabBarItem {
+    func numberOfItems(in bar: PageTabBar) -> Int {
+        items.count
+    }
+    
+    func pageTabBar(_ bar: PageTabBar, controlForItemAt index: Int) -> any PageTabBarItem {
         DefaultPageTabBarItem(title: items[index])
     }
     
@@ -63,21 +92,30 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
     }
 }
 
-import UIKit
-
 extension UINavigationItem {
     // https://twitter.com/sebjvidal/status/1748659522455937213?s=61&t=QkfPitI5Z7OEKMAvToTbCA
-    public func setBottomPalette(_ contentView: UIView) {
+    public func setBottomPalette(_ palette: NavigationBarPalette) {
+        let _setButtomPaletteSelector = Selector(("_setBottomPalette:"))
+        if responds(to: _setButtomPaletteSelector) {
+            perform(_setButtomPaletteSelector, with: palette.palette)
+        }
+    }
+}
+
+public final class NavigationBarPalette {
+    let palette: UIView
+    
+    init(contentView: UIView) {
         let _UINavigationBarPalette = NSClassFromString("_UINavigationBarPalette") as! UIView.Type
         let palette = _UINavigationBarPalette.perform(NSSelectorFromString("alloc"))
             .takeUnretainedValue()
             .perform(Selector(("initWithContentView:")), with: contentView)
             .takeUnretainedValue()
-
-        let _setButtomPaletteSelector = Selector(("_setBottomPalette:"))
-        if responds(to: _setButtomPaletteSelector) {
-            perform(_setButtomPaletteSelector, with: palette)
-        }
+        self.palette = palette as! UIView
+    }
+    
+    func setPreferredHeight(_ height: CGFloat) {
+        palette.perform(Selector(("setPreferredHeight:")), with: height)
     }
 }
 

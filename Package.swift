@@ -14,7 +14,17 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Pager"
+            name: "Pager",
+            dependencies: [
+                "ProportionalLayout",
+                "LabelContentConfiguration",
+            ]
+        ),
+        .target(
+            name: "ProportionalLayout"
+        ),
+        .target(
+            name: "LabelContentConfiguration"
         ),
         .testTarget(
             name: "PagerTests",
