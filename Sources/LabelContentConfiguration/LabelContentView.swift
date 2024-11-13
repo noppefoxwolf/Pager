@@ -42,7 +42,7 @@ final class LabelContentView: UIView, UIContentView {
         attributeContainer.font = UIFont(descriptor: descriptor, size: 0)
         attributeContainer.foregroundColor = UIColor.label
         let transformedContainer = configuration.textProperties?.transform(attributeContainer) ?? attributeContainer
-        var attributedString = AttributedString(configuration.text, attributes: transformedContainer)
+        let attributedString = AttributedString(configuration.text, attributes: transformedContainer)
         label.attributedText = NSAttributedString(attributedString)
     }
 }

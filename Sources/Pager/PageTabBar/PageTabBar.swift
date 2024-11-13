@@ -7,6 +7,9 @@ public final class PageTabBar: UICollectionView {
     let indicatorView = PageTabBarIndicatorView()
     weak var tabBarDelegate: (any PageTabBarDelegate)? = nil
     public weak var tabBarDataSource: (any PageTabBarDataSource)? = nil
+    #if os(iOS)
+    let feedbackGenerator = UISelectionFeedbackGenerator()
+    #endif
     
     let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
@@ -20,6 +23,10 @@ public final class PageTabBar: UICollectionView {
         showsHorizontalScrollIndicator = false
         showsVerticalScrollIndicator = false
         contentInsetAdjustmentBehavior = .never
+        
+        #if os(iOS)
+        feedbackGenerator.prepare()
+        #endif
         
         addSubview(indicatorView)
     }
@@ -77,7 +84,12 @@ extension PageTabBar: UICollectionViewDataSource {
         let focusIndex = Int(position.rounded())
         if rowSequence(for: section).contains(focusIndex) {
             let indexPath = IndexPath(row: focusIndex, section: section)
-            selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
+            if indexPathsForSelectedItems?.contains(indexPath) == false {
+                #if os(iOS)
+                feedbackGenerator.selectionChanged()
+                #endif
+                selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
+            }
         }
         
         let prevCell = cellForItem(at: IndexPath(row: prevIndex, section: section))
