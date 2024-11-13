@@ -72,7 +72,6 @@ open class PageViewController: WorkaroundCollectionViewController {
         cell.contentView.subviews.forEach({ $0.removeFromSuperview() })
         
         if let viewController = dataSource?.viewController(for: self, at: indexPath.section) {
-            viewController.view.backgroundColor = .clear
             viewController.willMove(toParent: nil)
             viewController.view.removeFromSuperview()
             viewController.removeFromParent()

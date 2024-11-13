@@ -18,6 +18,7 @@ public final class PageTabBar: UICollectionView {
     
     public init() {
         super.init(frame: .null, collectionViewLayout: ProportionalCollectionViewLayout())
+        backgroundColor = .clear
         delegate = self
         dataSource = self
         showsHorizontalScrollIndicator = false
