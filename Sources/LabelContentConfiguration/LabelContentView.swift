@@ -14,7 +14,6 @@ final class LabelContentView: UIView, UIContentView {
         super.init(frame: .zero)
         
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.adjustsFontForContentSizeCategory = true
         addSubview(label)
         let leadingConstraint = label.leadingAnchor.constraint(equalTo: leadingAnchor)
         leadingConstraint.priority = .defaultLow
@@ -36,7 +35,11 @@ final class LabelContentView: UIView, UIContentView {
     func configure(configuration: UIContentConfiguration) {
         guard let configuration = configuration as? LabelContentConfiguration else { return }
         var attributeContainer = AttributeContainer()
-        attributeContainer.font = UIFont.preferredFont(forTextStyle: .body)
+        
+        let descriptor = UIFontDescriptor
+            .preferredFontDescriptor(withTextStyle: .subheadline)
+            .withSymbolicTraits(.traitBold)!
+        attributeContainer.font = UIFont(descriptor: descriptor, size: 0)
         attributeContainer.foregroundColor = UIColor.label
         let transformedContainer = configuration.textProperties?.transform(attributeContainer) ?? attributeContainer
         var attributedString = AttributedString(configuration.text, attributes: transformedContainer)
