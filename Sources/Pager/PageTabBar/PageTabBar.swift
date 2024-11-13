@@ -28,10 +28,10 @@ public final class PageTabBar: UICollectionView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    let cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, String>(
-        handler: { cell, indexPath, text in
+    let cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, PageTabBarItem>(
+        handler: { cell, indexPath, item in
             var contentConfiguration = cell.labelConfiguration()
-            contentConfiguration.text = text
+            contentConfiguration.text = item.title
             contentConfiguration.textProperties = .init({ [weak cell] attributeContainer in
                 var attributeContainer = attributeContainer
                 if cell?.configurationState.isSelected == true {
@@ -58,7 +58,8 @@ extension PageTabBar: UICollectionViewDataSource {
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        let item = tabBarDataSource?.pageTabBar(self, controlForItemAt: indexPath.row) ?? ""
+        let item = tabBarDataSource?.pageTabBar(self, controlForItemAt: indexPath.row)
+        guard let item else { fatalError() }
         return collectionView.dequeueConfiguredReusableCell(
             using: cellRegistration,
             for: indexPath,

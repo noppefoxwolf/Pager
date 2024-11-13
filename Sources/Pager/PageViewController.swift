@@ -50,7 +50,6 @@ open class PageViewController: WorkaroundCollectionViewController {
     open override func viewDidLoad() {
         super.viewDidLoad()
         
-        pageTabBar.frame.size.height = 34
         pageTabBar.tabBarDelegate = self
     }
     

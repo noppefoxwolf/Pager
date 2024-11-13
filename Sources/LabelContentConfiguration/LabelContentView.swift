@@ -14,6 +14,7 @@ final class LabelContentView: UIView, UIContentView {
         super.init(frame: .zero)
         
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.adjustsFontForContentSizeCategory = true
         addSubview(label)
         let leadingConstraint = label.leadingAnchor.constraint(equalTo: leadingAnchor)
         leadingConstraint.priority = .defaultLow

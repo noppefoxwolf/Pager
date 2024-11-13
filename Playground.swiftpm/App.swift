@@ -28,8 +28,9 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
         pageTabBar.tabBarDataSource = self
         
         navigationItem.title = "Pager Example"
-        pageTabBar.frame = CGRect(x: 0, y: 0, width: 0, height: 34)
-        navigationItem.setBottomPalette(pageTabBar)
+        let palette = NavigationBarPalette(contentView: pageTabBar)
+        palette.setPreferredHeight(34)
+        navigationItem.setBottomPalette(palette)
         
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),
@@ -69,9 +70,8 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
         items.count
     }
     
-    func pageTabBar(_ bar: PageTabBar, controlForItemAt index: Int) -> String {
-        //DefaultPageTabBarItem(title: items[index]).makeButton()
-        items[index]
+    func pageTabBar(_ bar: PageTabBar, controlForItemAt index: Int) -> any PageTabBarItem {
+        DefaultPageTabBarItem(title: items[index])
     }
     
     func numberOfViewControllers(
@@ -92,21 +92,30 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
     }
 }
 
-import UIKit
-
 extension UINavigationItem {
     // https://twitter.com/sebjvidal/status/1748659522455937213?s=61&t=QkfPitI5Z7OEKMAvToTbCA
-    public func setBottomPalette(_ contentView: UIView) {
+    public func setBottomPalette(_ palette: NavigationBarPalette) {
+        let _setButtomPaletteSelector = Selector(("_setBottomPalette:"))
+        if responds(to: _setButtomPaletteSelector) {
+            perform(_setButtomPaletteSelector, with: palette.palette)
+        }
+    }
+}
+
+public final class NavigationBarPalette {
+    let palette: UIView
+    
+    init(contentView: UIView) {
         let _UINavigationBarPalette = NSClassFromString("_UINavigationBarPalette") as! UIView.Type
         let palette = _UINavigationBarPalette.perform(NSSelectorFromString("alloc"))
             .takeUnretainedValue()
             .perform(Selector(("initWithContentView:")), with: contentView)
             .takeUnretainedValue()
-
-        let _setButtomPaletteSelector = Selector(("_setBottomPalette:"))
-        if responds(to: _setButtomPaletteSelector) {
-            perform(_setButtomPaletteSelector, with: palette)
-        }
+        self.palette = palette as! UIView
+    }
+    
+    func setPreferredHeight(_ height: CGFloat) {
+        palette.perform(Selector(("setPreferredHeight:")), with: height)
     }
 }
 
