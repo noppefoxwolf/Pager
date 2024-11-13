@@ -1,4 +1,5 @@
 import UIKit
+import os
 
 // https://www.ackee.agency/blog/how-to-write-custom-uicollectionviewlayout-with-real-self-sizing-support
 package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
@@ -22,12 +23,14 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
     }
     
     enum LengthComponent: Equatable, Sendable {
+        case safeAreaInset(CGFloat)
         case sectionInset(CGFloat)
         case item(CGFloat)
         case spacing(CGFloat)
         
         var value: CGFloat {
             switch self {
+            case .safeAreaInset(let value): value
             case .sectionInset(let value): value
             case .item(let value): value
             case .spacing(let value): value
@@ -35,16 +38,17 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
         }
         
         var isItem: Bool {
-            if case .item = self {
+            switch self {
+            case .item, .spacing:
                 true
-            } else {
+            default:
                 false
             }
         }
         
-        var isSpacing: Bool {
+        var isInset: Bool {
             switch self {
-            case .sectionInset, .spacing:
+            case .safeAreaInset, .sectionInset:
                 true
             default:
                 false
@@ -61,7 +65,7 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
     }
     
     func availableWidth(for components: [LengthComponent], in collectionView: UICollectionView) -> CGFloat {
-        collectionView.safeAreaSize.width - width(for: components.filter(\.isSpacing))
+        collectionView.bounds.width - width(for: components.filter(\.isInset))
     }
     
     public var estimatedItemWidth: CGFloat = 200
@@ -71,26 +75,47 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
     public var sectionInset: UIEdgeInsets = .init(top: 0, left: 10, bottom: 0, right: 10)
     
     private var contentSize: CGSize = .zero
-    
+
     public override var collectionViewContentSize: CGSize {
         contentSize
     }
     
     private var cachedAttributes = [IndexPath : LayoutItem]()
     
+    let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier!,
+        category: #file
+    )
+    
     package override func prepare() {
         super.prepare()
         
-        collectionView?.alwaysBounceVertical = false
-        collectionView?.alwaysBounceHorizontal = false
+        let lengthComponents = prepareForFlowLayout(
+            collectionView: collectionView!
+        )
         
+        contentSize.width = max(collectionView!.safeAreaSize.width, width(for: lengthComponents))
+        contentSize.height = collectionView!.safeAreaSize.height
+        
+        if width(for: lengthComponents) <= collectionView!.safeAreaSize.width {
+            prepareForFitting(
+                contentWidth: contentWidth(for: lengthComponents),
+                availableWidth: availableWidth(for: lengthComponents, in: collectionView!)
+            )
+        }
+    }
+    
+    func prepareForFlowLayout(
+        collectionView: UICollectionView
+    ) -> [LengthComponent] {
         var lengthComponents: [LengthComponent] = []
         var zIndex = 1
         
-        for section in collectionView!.sectionSequence {
+        lengthComponents.append(.safeAreaInset(collectionView.safeAreaInsets.left))
+        for section in collectionView.sectionSequence {
             lengthComponents.append(.sectionInset(sectionInset.left))
             
-            for row in collectionView!.rowSequence(for: section) {
+            for row in collectionView.rowSequence(for: section) {
                 let indexPath = IndexPath(row: row, section: section)
                 
                 if var layoutItem = cachedAttributes[indexPath] {
@@ -99,13 +124,13 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
                     cachedAttributes[indexPath] = layoutItem
                     lengthComponents.append(.item(layoutItem.width))
                 } else {
-                    let newLayoutItem = LayoutItem(
+                    let layoutItem = LayoutItem(
                         x: width(for: lengthComponents),
                         width: estimatedItemWidth,
                         zIndex: zIndex
                     )
-                    cachedAttributes[indexPath] = newLayoutItem
-                    lengthComponents.append(.item(estimatedItemWidth))
+                    cachedAttributes[indexPath] = layoutItem
+                    lengthComponents.append(.item(layoutItem.width))
                 }
                 
                 lengthComponents.append(.spacing(minimumSpacing))
@@ -117,31 +142,37 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
             }
             lengthComponents.append(.sectionInset(sectionInset.right))
         }
+        lengthComponents.append(.safeAreaInset(collectionView.safeAreaInsets.right))
         
-        contentSize.width = max(collectionView!.safeAreaSize.width, width(for: lengthComponents))
-        contentSize.height = collectionView!.safeAreaSize.height
-        
-        if width(for: lengthComponents) <= collectionView!.safeAreaSize.width {
-            var offset: CGFloat = 0
-            for section in collectionView!.sectionSequence {
-                offset += sectionInset.left
-                
-                for row in collectionView!.rowSequence(for: section) {
-                    let indexPath = IndexPath(row: row, section: section)
-                    let cachedItem = cachedAttributes[indexPath]!
-                    let ratio = cachedItem.width / contentWidth(for: lengthComponents)
-                    let availableWidth = availableWidth(for: lengthComponents, in: collectionView!)
-                    let fullWidth = availableWidth * ratio
-                    cachedAttributes[indexPath]?.width = fullWidth
-                    cachedAttributes[indexPath]?.x = offset
-                    offset += fullWidth
-                    
-                    offset += minimumSpacing
-                }
-                offset -= minimumSpacing
-                offset += sectionInset.right
+        return lengthComponents
+    }
+    
+    func prepareForFitting(
+        contentWidth: CGFloat,
+        availableWidth: CGFloat
+    ) {
+        var lengthComponents: [LengthComponent] = []
+        lengthComponents.append(.safeAreaInset(collectionView!.safeAreaInsets.left))
+        for section in collectionView!.sectionSequence {
+            lengthComponents.append(.sectionInset(sectionInset.left))
+            
+            for row in collectionView!.rowSequence(for: section) {
+                let indexPath = IndexPath(row: row, section: section)
+                let cachedItem = cachedAttributes[indexPath]!
+                let ratio = cachedItem.width / contentWidth
+                let width = availableWidth * ratio
+                cachedAttributes[indexPath]?.width = width
+                cachedAttributes[indexPath]?.x = self.width(for: lengthComponents)
+                logger.debug("\(indexPath): \(ratio) \(width)")
+                lengthComponents.append(.item(width))
+                lengthComponents.append(.spacing(minimumSpacing))
             }
+            if case .spacing = lengthComponents.last {
+                lengthComponents.removeLast()
+            }
+            lengthComponents.append(.sectionInset(sectionInset.right))
         }
+        lengthComponents.append(.safeAreaInset(collectionView!.safeAreaInsets.right))
     }
     
     package override func layoutAttributesForElements(

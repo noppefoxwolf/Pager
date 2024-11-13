@@ -3,6 +3,7 @@ import os
 
 open class PageViewController: WorkaroundCollectionViewController {
     public weak var dataSource: (any PageViewControllerDataSource)? = nil
+    
     public let pageTabBar = PageTabBar()
     var hostedViewControllers: Set<UIViewController> = []
     
@@ -99,11 +100,40 @@ open class PageViewController: WorkaroundCollectionViewController {
         return cell
     }
     
+    var centerIndexPath: IndexPath {
+        let x = collectionView.contentOffset.x + collectionView.bounds.width / 2
+        let y = collectionView.bounds.height / 2
+        return collectionView.indexPathForItem(at: CGPoint(x: x, y: y)) ?? IndexPath(row: 0, section: 0)
+    }
+    
     public func reloadData() {
         hostedViewControllers.forEach({ $0.removeFromParent() })
         hostedViewControllers = []
-        collectionView.reloadData()
+        CATransaction.begin()
+        CATransaction.setCompletionBlock { [unowned self] in
+            pageTabBar.setIndicator(Double(centerIndexPath.section))
+        }
         pageTabBar.reloadData()
+        collectionView.reloadData()
+        CATransaction.commit()
+    }
+    
+    open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        
+        let offset = pageTabBar.contentOffset
+        let width = pageTabBar.bounds.size.width
+        
+        let index = round(offset.x / width)
+        let newOffset = CGPoint(x: index * size.width, y: offset.y)
+        
+        coordinator.animate(
+            alongsideTransition: { [unowned pageTabBar] (context) in
+                pageTabBar.reloadData()
+                pageTabBar.setContentOffset(newOffset, animated: false)
+            },
+            completion: nil
+        )
     }
 }
 

@@ -19,6 +19,7 @@ public final class PageTabBar: UICollectionView {
         dataSource = self
         showsHorizontalScrollIndicator = false
         showsVerticalScrollIndicator = false
+        contentInsetAdjustmentBehavior = .never
         
         addSubview(indicatorView)
     }
@@ -66,7 +67,6 @@ extension PageTabBar: UICollectionViewDataSource {
     }
     
     func setIndicator(_ position: Double) {
-        logger.debug("setIndicator: \(position)")
         let section = 0
         
         let prevIndex = Int(floor(position))
@@ -88,7 +88,6 @@ extension PageTabBar: UICollectionViewDataSource {
         let prevCenter = prevCell?.center ?? .zero
         let currentWidth = currentLabel?.bounds.width ?? 0
         let currentCenter = currentCell?.center ?? .zero
-        logger.debug("prevWidth: \(prevWidth) currentWidth: \(currentWidth)")
 
         indicatorView.frame.size.width =
         prevWidth + ((currentWidth - prevWidth) * fractionCompleted)
