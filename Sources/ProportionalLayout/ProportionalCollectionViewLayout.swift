@@ -99,6 +99,7 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
         
         if width(for: lengthComponents) <= collectionView!.safeAreaSize.width {
             prepareForFitting(
+                collectionView: collectionView!,
                 contentWidth: contentWidth(for: lengthComponents),
                 availableWidth: availableWidth(for: lengthComponents, in: collectionView!)
             )
@@ -148,22 +149,22 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
     }
     
     func prepareForFitting(
+        collectionView: UICollectionView,
         contentWidth: CGFloat,
         availableWidth: CGFloat
     ) {
         var lengthComponents: [LengthComponent] = []
-        lengthComponents.append(.safeAreaInset(collectionView!.safeAreaInsets.left))
-        for section in collectionView!.sectionSequence {
+        lengthComponents.append(.safeAreaInset(collectionView.safeAreaInsets.left))
+        for section in collectionView.sectionSequence {
             lengthComponents.append(.sectionInset(sectionInset.left))
             
-            for row in collectionView!.rowSequence(for: section) {
+            for row in collectionView.rowSequence(for: section) {
                 let indexPath = IndexPath(row: row, section: section)
                 let cachedItem = cachedAttributes[indexPath]!
                 let ratio = cachedItem.width / contentWidth
                 let width = availableWidth * ratio
                 cachedAttributes[indexPath]?.width = width
                 cachedAttributes[indexPath]?.x = self.width(for: lengthComponents)
-                logger.debug("\(indexPath): \(ratio) \(width)")
                 lengthComponents.append(.item(width))
                 lengthComponents.append(.spacing(minimumSpacing))
             }
@@ -172,7 +173,7 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
             }
             lengthComponents.append(.sectionInset(sectionInset.right))
         }
-        lengthComponents.append(.safeAreaInset(collectionView!.safeAreaInsets.right))
+        lengthComponents.append(.safeAreaInset(collectionView.safeAreaInsets.right))
     }
     
     package override func layoutAttributesForElements(

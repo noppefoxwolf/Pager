@@ -30,10 +30,13 @@ open class PageViewController: WorkaroundCollectionViewController {
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
         
+        typealias Handler = NSCollectionLayoutSectionVisibleItemsInvalidationHandler
+        let handler: Handler = { [weak self] (items, point, environment) in
+            let progress = point.x / environment.container.contentSize.width
+            self?.onUpdatedPageProgress(progress)
+        }
         let layout = UICollectionViewCompositionalLayout.paging(
-            visibleItemsInvalidationHandler: { [weak self] (items, point, environment) in
-                self?.onUpdatedPageProgress(point.x / environment.container.contentSize.width)
-            }
+            visibleItemsInvalidationHandler: handler
         )
         collectionView.setCollectionViewLayout(layout, animated: false)
     }
@@ -41,7 +44,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     func onUpdatedPageProgress(_ progress: Double) {
         pageTabBar.setIndicator(progress)
         
-        let index = Int(progress + 0.5)
+        let index = Int(progress.rounded())
         let vc = dataSource?.viewController(for: self, at: index)
         let sv = vc?.contentScrollView(for: .top) ?? (vc?.view as? UIScrollView)
         setContentScrollView(sv, for: .top)
@@ -98,10 +101,10 @@ open class PageViewController: WorkaroundCollectionViewController {
         return cell
     }
     
-    var centerIndexPath: IndexPath {
+    var centerIndexPath: IndexPath? {
         let x = collectionView.contentOffset.x + collectionView.bounds.width / 2
         let y = collectionView.bounds.height / 2
-        return collectionView.indexPathForItem(at: CGPoint(x: x, y: y)) ?? IndexPath(row: 0, section: 0)
+        return collectionView.indexPathForItem(at: CGPoint(x: x, y: y))
     }
     
     public func reloadData() {
@@ -109,14 +112,19 @@ open class PageViewController: WorkaroundCollectionViewController {
         hostedViewControllers = []
         CATransaction.begin()
         CATransaction.setCompletionBlock { [unowned self] in
-            pageTabBar.setIndicator(Double(centerIndexPath.section))
+            if let centerIndexPath {
+                pageTabBar.setIndicator(Double(centerIndexPath.section))
+            }
         }
         pageTabBar.reloadData()
         collectionView.reloadData()
         CATransaction.commit()
     }
     
-    open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+    open override func viewWillTransition(
+        to size: CGSize,
+        with coordinator: UIViewControllerTransitionCoordinator
+    ) {
         super.viewWillTransition(to: size, with: coordinator)
         
         let offset = pageTabBar.contentOffset
