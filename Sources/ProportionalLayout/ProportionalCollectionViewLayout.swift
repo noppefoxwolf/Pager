@@ -37,9 +37,27 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
             }
         }
         
-        var isItem: Bool {
+        var isContent: Bool {
             switch self {
             case .item, .spacing:
+                true
+            default:
+                false
+            }
+        }
+        
+        var isItem: Bool {
+            switch self {
+            case .item:
+                true
+            default:
+                false
+            }
+        }
+        
+        var isSpacing: Bool {
+            switch self {
+            case .spacing:
                 true
             default:
                 false
@@ -61,7 +79,7 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
     }
     
     func contentWidth(for components: [LengthComponent]) -> CGFloat {
-        width(for: components.filter(\.isItem))
+        width(for: components.filter(\.isContent))
     }
     
     func availableWidth(for components: [LengthComponent], in collectionView: UICollectionView) -> CGFloat {
@@ -90,23 +108,76 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
     package override func prepare() {
         super.prepare()
         
-        let lengthComponents = prepareForFlowLayout(
+        let lengthComponents = prepareForFill(
             collectionView: collectionView!
         )
         
         contentSize.width = max(collectionView!.safeAreaSize.width, width(for: lengthComponents))
         contentSize.height = collectionView!.safeAreaSize.height
         
-        if width(for: lengthComponents) <= collectionView!.safeAreaSize.width {
-            prepareForFitting(
+        let availableWidth = availableWidth(for: lengthComponents, in: collectionView!)
+        let prefferedDistribution = prefferedDistribution(
+            lengthComponents: lengthComponents,
+            collectionView: collectionView!
+        )
+        switch prefferedDistribution {
+        case .fill:
+            break
+        case .fillProportionally:
+            prepareForFillProportionally(
                 collectionView: collectionView!,
                 contentWidth: contentWidth(for: lengthComponents),
-                availableWidth: availableWidth(for: lengthComponents, in: collectionView!)
+                availableWidth: availableWidth
+            )
+        case .fillEqually:
+            let fillEquallyItemWidth = fillEquallyItemWidth(
+                lengthComponents: lengthComponents,
+                collectionView: collectionView!
+            )
+            prepareForFillEqually(
+                collectionView: collectionView!,
+                itemWidth: fillEquallyItemWidth
             )
         }
     }
     
-    func prepareForFlowLayout(
+    func prefferedDistribution(
+        lengthComponents: [LengthComponent],
+        collectionView: UICollectionView
+    ) -> PrefferedDistribution {
+        if width(for: lengthComponents) <= collectionView.safeAreaSize.width {
+            let maxItemWidth = lengthComponents.filter(\.isContent).map(\.value).max() ?? 0
+            let fillEquallyItemWidth = fillEquallyItemWidth(
+                lengthComponents: lengthComponents,
+                collectionView: collectionView
+            )
+            if maxItemWidth <= fillEquallyItemWidth {
+                return .fillEqually
+            } else {
+                return .fillProportionally
+            }
+        } else {
+            return .fill
+        }
+    }
+    
+    func fillEquallyItemWidth(
+        lengthComponents: [LengthComponent],
+        collectionView: UICollectionView
+    ) -> CGFloat {
+        let spacingWidth = lengthComponents.filter(\.isSpacing).map(\.value).reduce(0, +)
+        let availableWidth = availableWidth(for: lengthComponents, in: collectionView) - spacingWidth
+        let itemCount = lengthComponents.count(where: \.isItem)
+        return availableWidth / CGFloat(itemCount)
+    }
+    
+    enum PrefferedDistribution: Sendable {
+        case fill
+        case fillProportionally
+        case fillEqually
+    }
+    
+    func prepareForFill(
         collectionView: UICollectionView
     ) -> [LengthComponent] {
         var lengthComponents: [LengthComponent] = []
@@ -148,7 +219,32 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
         return lengthComponents
     }
     
-    func prepareForFitting(
+    func prepareForFillEqually(
+        collectionView: UICollectionView,
+        itemWidth: CGFloat
+    ) {
+        var lengthComponents: [LengthComponent] = []
+        lengthComponents.append(.safeAreaInset(collectionView.safeAreaInsets.left))
+        for section in collectionView.sectionSequence {
+            lengthComponents.append(.sectionInset(sectionInset.left))
+            
+            for row in collectionView.rowSequence(for: section) {
+                let indexPath = IndexPath(row: row, section: section)
+                let width = itemWidth
+                cachedAttributes[indexPath]?.width = width
+                cachedAttributes[indexPath]?.x = self.width(for: lengthComponents)
+                lengthComponents.append(.item(width))
+                lengthComponents.append(.spacing(minimumSpacing))
+            }
+            if case .spacing = lengthComponents.last {
+                lengthComponents.removeLast()
+            }
+            lengthComponents.append(.sectionInset(sectionInset.right))
+        }
+        lengthComponents.append(.safeAreaInset(collectionView.safeAreaInsets.right))
+    }
+    
+    func prepareForFillProportionally(
         collectionView: UICollectionView,
         contentWidth: CGFloat,
         availableWidth: CGFloat

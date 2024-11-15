@@ -115,6 +115,7 @@ open class PageViewController: WorkaroundCollectionViewController {
             if let centerIndexPath {
                 pageTabBar.setIndicator(Double(centerIndexPath.section))
             }
+            pageTabBar.indicatorView.isHidden = numberOfSections(in: collectionView) == 0
         }
         pageTabBar.reloadData()
         collectionView.reloadData()

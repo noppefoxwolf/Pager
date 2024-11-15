@@ -46,10 +46,10 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
             primaryAction: UIAction { [unowned self] _ in
                 // random length words
                 let phrases: [String] = [
-                    "Pager",
-                    "SwiftUI",
-                    "SwiftUI Pager",
-                    "SwiftUI Pager Example",
+                    "🦊",
+                    "For you",
+                    "Buisiness & Finance",
+                    "Entertainment, Fun, Games & More",
                 ]
                 items.append(phrases.randomElement()!)
                 self.reloadData()

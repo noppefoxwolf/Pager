@@ -12,19 +12,21 @@ final class LabelContentView: UIView, UIContentView {
         self.configuration = configuration
 
         super.init(frame: .zero)
-        
+        backgroundColor = .yellow
+        label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         addSubview(label)
         let leadingConstraint = label.leadingAnchor.constraint(equalTo: leadingAnchor)
-        leadingConstraint.priority = .defaultLow
+        leadingConstraint.priority = .fittingSizeLevel
         let trailingConstraint = label.trailingAnchor.constraint(equalTo: trailingAnchor)
-        trailingConstraint.priority = .defaultLow
+        trailingConstraint.priority = .fittingSizeLevel
         NSLayoutConstraint.activate([
             label.topAnchor.constraint(equalTo: topAnchor),
             label.centerXAnchor.constraint(equalTo: centerXAnchor),
             label.bottomAnchor.constraint(equalTo: bottomAnchor),
             leadingConstraint,
             trailingConstraint,
+            label.widthAnchor.constraint(greaterThanOrEqualToConstant: 44),
         ])
     }
 
@@ -44,6 +46,7 @@ final class LabelContentView: UIView, UIContentView {
         let transformedContainer = configuration.textProperties?.transform(attributeContainer) ?? attributeContainer
         let attributedString = AttributedString(configuration.text, attributes: transformedContainer)
         label.attributedText = NSAttributedString(attributedString)
+        label.backgroundColor = .red
     }
 }
 

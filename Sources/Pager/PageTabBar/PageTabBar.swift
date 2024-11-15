@@ -79,8 +79,9 @@ extension PageTabBar: UICollectionViewDataSource {
         let fractionCompleted = position - floor(position)
         
         let focusIndex = Int(position.rounded())
+        let indexPath = IndexPath(row: focusIndex, section: section)
+        
         if rowSequence(for: section).contains(focusIndex) {
-            let indexPath = IndexPath(row: focusIndex, section: section)
             if let indexPathsForSelectedItems, !indexPathsForSelectedItems.isEmpty, !indexPathsForSelectedItems.contains(indexPath) {
                 feedbackGenerator.selectionChanged()
             }
@@ -91,15 +92,15 @@ extension PageTabBar: UICollectionViewDataSource {
             )
         }
         
-        let prevCell = cellForItem(at: IndexPath(row: prevIndex, section: section))
-        let currentCell = cellForItem(at: IndexPath(row: currentIndex, section: section))
-        let prevLabel = prevCell?.contentView.subviews.first(where: { $0 is UILabel })
-        let currentLabel = currentCell?.contentView.subviews.first(where: { $0 is UILabel })
+        guard let prevCell = cellForItem(at: IndexPath(row: prevIndex, section: section)) else { return }
+        let currentCell = cellForItem(at: IndexPath(row: currentIndex, section: section)) ?? prevCell
+        guard let prevLabel = prevCell.contentView.subviews.first(where: { $0 is UILabel }) else { return }
+        guard let currentLabel = currentCell.contentView.subviews.first(where: { $0 is UILabel }) else { return }
 
-        let prevWidth = prevLabel?.bounds.width ?? 0
-        let prevCenter = prevCell?.center ?? .zero
-        let currentWidth = currentLabel?.bounds.width ?? 0
-        let currentCenter = currentCell?.center ?? .zero
+        let prevWidth = prevLabel.bounds.width
+        let prevCenter = prevCell.center
+        let currentWidth = currentLabel.bounds.width
+        let currentCenter = currentCell.center
 
         indicatorView.frame.size.width =
         prevWidth + ((currentWidth - prevWidth) * fractionCompleted)
