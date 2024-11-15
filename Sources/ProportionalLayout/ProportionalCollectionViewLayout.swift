@@ -115,29 +115,33 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
         contentSize.width = max(collectionView!.safeAreaSize.width, width(for: lengthComponents))
         contentSize.height = collectionView!.safeAreaSize.height
         
-        let availableWidth = availableWidth(for: lengthComponents, in: collectionView!)
-        let prefferedDistribution = prefferedDistribution(
-            lengthComponents: lengthComponents,
-            collectionView: collectionView!
-        )
-        switch prefferedDistribution {
-        case .fill:
-            break
-        case .fillProportionally:
-            prepareForFillProportionally(
-                collectionView: collectionView!,
-                contentWidth: contentWidth(for: lengthComponents),
-                availableWidth: availableWidth
-            )
-        case .fillEqually:
-            let fillEquallyItemWidth = fillEquallyItemWidth(
+        // workaround: iOS 17 crashes with the following error:
+        // Thread 1: Fatal error: <PageTabBar 0x600000c84750> is stuck in a recursive layout loop. This can happen when self-sizing views do not return consistent sizes, or the collection view's frame/bounds/contentOffset is being constantly adjusted. To debug this issue, check the Console app for logs in the "UICollectionViewFeedbackLoopDebugger" category.
+        if #available(iOS 18.0, *) {
+            let availableWidth = availableWidth(for: lengthComponents, in: collectionView!)
+            let prefferedDistribution = prefferedDistribution(
                 lengthComponents: lengthComponents,
                 collectionView: collectionView!
             )
-            prepareForFillEqually(
-                collectionView: collectionView!,
-                itemWidth: fillEquallyItemWidth
-            )
+            switch prefferedDistribution {
+            case .fill:
+                break
+            case .fillProportionally:
+                prepareForFillProportionally(
+                    collectionView: collectionView!,
+                    contentWidth: contentWidth(for: lengthComponents),
+                    availableWidth: availableWidth
+                )
+            case .fillEqually:
+                let fillEquallyItemWidth = fillEquallyItemWidth(
+                    lengthComponents: lengthComponents,
+                    collectionView: collectionView!
+                )
+                prepareForFillEqually(
+                    collectionView: collectionView!,
+                    itemWidth: fillEquallyItemWidth
+                )
+            }
         }
     }
     
@@ -322,7 +326,9 @@ package final class ProportionalCollectionViewLayout: UICollectionViewLayout {
         return context
     }
     
-    package override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
+    package override func invalidateLayout(
+        with context: UICollectionViewLayoutInvalidationContext
+    ) {
         super.invalidateLayout(with: context)
         
         if context.invalidateEverything || context.invalidateDataSourceCounts {
