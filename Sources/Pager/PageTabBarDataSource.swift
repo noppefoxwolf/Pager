@@ -2,5 +2,8 @@ import Foundation
 
 public protocol PageTabBarDataSource: AnyObject {
     @MainActor
-    func barItem(for bar: PageTabBar, at index: Int) -> any PageTabBarItem
+    func numberOfItems(in bar: PageTabBar) -> Int
+    
+    @MainActor
+    func pageTabBar(_ bar: PageTabBar, controlForItemAt index: Int) -> any PageTabBarItem
 }

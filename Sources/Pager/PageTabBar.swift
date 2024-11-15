@@ -13,7 +13,7 @@ public final class PageTabBar: UIStackView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public weak var dataSource: (any PageTabBarDataSource)? = nil
+    public weak var tabBarDataSource: (any PageTabBarDataSource)? = nil
     weak var delegate: (any PageTabBarDelegate)? = nil
     
     let indicatorView = PageTabBarIndicatorView()
@@ -24,7 +24,7 @@ public final class PageTabBar: UIStackView {
             $0.removeFromSuperview()
         })
         for i in 0..<count {
-            if let barItem = dataSource?.barItem(for: self, at: i) {
+            if let barItem = tabBarDataSource?.pageTabBar(self, controlForItemAt: i) {
                 let button = barItem.makeButton()
                 button.addAction(
                     UIAction { [unowned self, i] _ in
