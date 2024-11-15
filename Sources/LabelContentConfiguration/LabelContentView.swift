@@ -12,7 +12,6 @@ final class LabelContentView: UIView, UIContentView {
         self.configuration = configuration
 
         super.init(frame: .zero)
-        backgroundColor = .yellow
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         addSubview(label)
@@ -46,7 +45,6 @@ final class LabelContentView: UIView, UIContentView {
         let transformedContainer = configuration.textProperties?.transform(attributeContainer) ?? attributeContainer
         let attributedString = AttributedString(configuration.text, attributes: transformedContainer)
         label.attributedText = NSAttributedString(attributedString)
-        label.backgroundColor = .red
     }
 }
 
