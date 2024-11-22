@@ -5,23 +5,23 @@ import PackageDescription
 
 let package = Package(
     name: "Pager",
-    platforms: [.iOS(.v16), .visionOS(.v1)],
+    platforms: [.iOS(.v17), .visionOS(.v1)],
     products: [
         .library(
             name: "Pager",
             targets: ["Pager"]
         ),
     ],
+    dependencies: [
+        .package(url: "https://github.com/noppefoxwolf/CollectionViewDistributionalLayout", from: "0.0.1")
+    ],
     targets: [
         .target(
             name: "Pager",
             dependencies: [
-                "ProportionalLayout",
+                "CollectionViewDistributionalLayout",
                 "LabelContentConfiguration",
             ]
-        ),
-        .target(
-            name: "ProportionalLayout"
         ),
         .target(
             name: "LabelContentConfiguration"

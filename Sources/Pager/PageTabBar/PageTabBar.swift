@@ -1,5 +1,5 @@
 import UIKit
-import ProportionalLayout
+import CollectionViewDistributionalLayout
 import LabelContentConfiguration
 import os
 
@@ -15,7 +15,7 @@ public final class PageTabBar: UICollectionView {
     )
     
     public init() {
-        super.init(frame: .null, collectionViewLayout: ProportionalCollectionViewLayout())
+        super.init(frame: .null, collectionViewLayout: CollectionViewDistributionalLayout())
         backgroundColor = .clear
         delegate = self
         dataSource = self
@@ -121,3 +121,9 @@ extension PageTabBar: UICollectionViewDelegate {
     }
 }
 
+extension UICollectionView {
+    package func rowSequence(for section: Int) -> some Sequence<Int> {
+        let numberOfRows = numberOfItems(inSection: section)
+        return (0..<numberOfRows)
+    }
+}

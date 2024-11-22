@@ -6,7 +6,7 @@ import AppleProductTypes
 let package = Package(
     name: "Playground",
     platforms: [
-        .iOS(.v16)
+        .iOS(.v17)
     ],
     products: [
         .iOSApplication(
