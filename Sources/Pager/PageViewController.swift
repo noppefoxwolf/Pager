@@ -132,8 +132,9 @@ open class PageViewController: WorkaroundCollectionViewController {
         let width = pageTabBar.bounds.size.width
         
         let index = round(offset.x / width)
-        let newOffset = CGPoint(x: index * size.width, y: offset.y)
+        guard index.isNormal else { return }
         
+        let newOffset = CGPoint(x: index * size.width, y: offset.y)
         coordinator.animate(
             alongsideTransition: { [unowned pageTabBar] (context) in
                 pageTabBar.reloadData()
