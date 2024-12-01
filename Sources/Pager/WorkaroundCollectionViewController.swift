@@ -11,8 +11,9 @@ open class WorkaroundCollectionViewController: UICollectionViewController {
         let width = collectionView.bounds.size.width
         
         let index = round(offset.x / width)
-        let newOffset = CGPoint(x: index * size.width, y: offset.y)
+        guard index.isNormal else { return }
         
+        let newOffset = CGPoint(x: index * size.width, y: offset.y)
         coordinator.animate(
             alongsideTransition: { (context) in
                 collectionView.reloadData()
