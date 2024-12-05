@@ -124,12 +124,12 @@ open class PageViewController: WorkaroundCollectionViewController {
                 pageTabBar.setIndicator(Double(centerIndexPath.section))
             }
             pageTabBar.indicatorView.isHidden = numberOfSections(in: collectionView) == 0
+            
+            update(percentComplete)
         }
         pageTabBar.reloadData()
         collectionView.reloadData()
         CATransaction.commit()
-        
-        update(percentComplete)
     }
     
     open override func viewWillTransition(
