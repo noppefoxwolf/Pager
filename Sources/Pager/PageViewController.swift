@@ -45,9 +45,10 @@ open class PageViewController: WorkaroundCollectionViewController {
         pageTabBar.setIndicator(progress)
         
         let index = Int(progress.rounded())
-        let vc = dataSource?.viewController(for: self, at: index)
-        let sv = vc?.contentScrollView(for: .top) ?? (vc?.view as? UIScrollView)
-        setContentScrollView(sv, for: .top)
+        let viewController = dataSource?.viewController(for: self, at: index)
+        let contentScrollView = viewController?.contentScrollView(for: .top)
+        let scrollView = contentScrollView ?? (viewController?.view as? UIScrollView)
+        setContentScrollView(scrollView, for: .top)
     }
     
     open override func viewDidLoad() {
