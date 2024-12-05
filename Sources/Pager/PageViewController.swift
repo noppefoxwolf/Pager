@@ -32,22 +32,27 @@ open class PageViewController: WorkaroundCollectionViewController {
         
         typealias Handler = NSCollectionLayoutSectionVisibleItemsInvalidationHandler
         let handler: Handler = { [weak self] (items, point, environment) in
-            let progress = point.x / environment.container.contentSize.width
-            self?.onUpdatedPageProgress(progress)
+            let percentComplete = point.x / environment.container.contentSize.width
+            self?.update(percentComplete)
         }
         let layout = UICollectionViewCompositionalLayout.paging(
             visibleItemsInvalidationHandler: handler
         )
+        
         collectionView.setCollectionViewLayout(layout, animated: false)
     }
     
-    func onUpdatedPageProgress(_ progress: Double) {
-        pageTabBar.setIndicator(progress)
+    var percentComplete: CGFloat {
+        let value = collectionView.contentOffset.x / collectionView.visibleSize.width
+        return value.isNaN ? 0.0 : value
+    }
+    
+    func update(_ percentComplete: Double) {
+        pageTabBar.setIndicator(percentComplete)
         
-        let index = Int(progress.rounded())
+        let index = Int(percentComplete.rounded())
         let indexPath = IndexPath(item: 0, section: index)
         let viewController = hostedViewControllers[indexPath]
-        //dataSource?.viewController(for: self, at: index)
         let contentScrollView = viewController?.contentScrollView(for: .top)
         let scrollView = contentScrollView ?? (viewController?.view as? UIScrollView)
         setContentScrollView(scrollView, for: .top)
@@ -123,6 +128,8 @@ open class PageViewController: WorkaroundCollectionViewController {
         pageTabBar.reloadData()
         collectionView.reloadData()
         CATransaction.commit()
+        
+        update(percentComplete)
     }
     
     open override func viewWillTransition(

@@ -66,7 +66,8 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
     ) -> UIViewController? {
         if items.indices.contains(index) {
             //ChildViewController(text: items[index])
-            CollectionViewController(collectionViewLayout: UICollectionViewCompositionalLayout.list(using: .init(appearance: .plain)))
+            //TableViewController(style: .plain)
+            CollectionViewController(style: .plain)
         } else {
             nil
         }

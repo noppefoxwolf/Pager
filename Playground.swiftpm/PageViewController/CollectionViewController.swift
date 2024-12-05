@@ -28,6 +28,14 @@ final class CollectionViewController: UICollectionViewController {
     
     var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
     
+    init(style: UICollectionLayoutListConfiguration.Appearance) {
+        super.init(collectionViewLayout: UICollectionViewCompositionalLayout.list(using: UICollectionLayoutListConfiguration(appearance: style)))
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
