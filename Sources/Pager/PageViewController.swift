@@ -5,7 +5,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     public weak var dataSource: (any PageViewControllerDataSource)? = nil
     
     public let pageTabBar = PageTabBar()
-    var hostedViewControllers: Set<UIViewController> = []
+    var hostedViewControllers: [IndexPath : UIViewController] = [:]
     
     let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
@@ -45,7 +45,9 @@ open class PageViewController: WorkaroundCollectionViewController {
         pageTabBar.setIndicator(progress)
         
         let index = Int(progress.rounded())
-        let viewController = dataSource?.viewController(for: self, at: index)
+        let indexPath = IndexPath(item: 0, section: index)
+        let viewController = hostedViewControllers[indexPath]
+        //dataSource?.viewController(for: self, at: index)
         let contentScrollView = viewController?.contentScrollView(for: .top)
         let scrollView = contentScrollView ?? (viewController?.view as? UIScrollView)
         setContentScrollView(scrollView, for: .top)
@@ -83,7 +85,7 @@ open class PageViewController: WorkaroundCollectionViewController {
             
             viewController.willMove(toParent: self)
             addChild(viewController)
-            hostedViewControllers.insert(viewController)
+            hostedViewControllers[indexPath] = viewController
             cell.contentView.addSubview(viewController.view)
             viewController.didMove(toParent: self)
             
@@ -109,8 +111,8 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
     
     public func reloadData() {
-        hostedViewControllers.forEach({ $0.removeFromParent() })
-        hostedViewControllers = []
+        hostedViewControllers.values.forEach({ $0.removeFromParent() })
+        hostedViewControllers = [:]
         CATransaction.begin()
         CATransaction.setCompletionBlock { [unowned self] in
             if let centerIndexPath {
