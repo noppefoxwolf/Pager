@@ -1,10 +1,7 @@
 import UIKit
 
 extension UICollectionViewLayout {
-    static func paging(
-        visibleItemsInvalidationHandler: @escaping
-        NSCollectionLayoutSectionVisibleItemsInvalidationHandler
-    ) -> UICollectionViewCompositionalLayout {
+    static func paging() -> UICollectionViewCompositionalLayout {
         let configuration = UICollectionViewCompositionalLayoutConfiguration()
         configuration.scrollDirection = .horizontal
         configuration.contentInsetsReference = .automatic
@@ -26,7 +23,6 @@ extension UICollectionViewLayout {
                 )
                 let section = NSCollectionLayoutSection(group: group)
                 section.orthogonalScrollingBehavior = .paging
-                section.visibleItemsInvalidationHandler = visibleItemsInvalidationHandler
                 return section
             },
             configuration: configuration

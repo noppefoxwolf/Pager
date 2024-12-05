@@ -29,22 +29,19 @@ open class PageViewController: WorkaroundCollectionViewController {
         collectionView.bounces = false
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-        
-        typealias Handler = NSCollectionLayoutSectionVisibleItemsInvalidationHandler
-        let handler: Handler = { [weak self] (items, point, environment) in
-            let percentComplete = point.x / environment.container.contentSize.width
-            self?.update(percentComplete)
-        }
-        let layout = UICollectionViewCompositionalLayout.paging(
-            visibleItemsInvalidationHandler: handler
-        )
-        
+        let layout = UICollectionViewCompositionalLayout.paging()
         collectionView.setCollectionViewLayout(layout, animated: false)
     }
     
     var percentComplete: CGFloat {
         let value = collectionView.contentOffset.x / collectionView.visibleSize.width
         return value.isNaN ? 0.0 : value
+    }
+    
+    var indexPathForCenterItem: IndexPath? {
+        let x = collectionView.contentOffset.x + collectionView.bounds.width / 2
+        let y = collectionView.bounds.height / 2
+        return collectionView.indexPathForItem(at: CGPoint(x: x, y: y))
     }
     
     func update(_ percentComplete: Double) {
@@ -62,6 +59,11 @@ open class PageViewController: WorkaroundCollectionViewController {
         super.viewDidLoad()
         
         pageTabBar.tabBarDelegate = self
+    }
+    
+    open override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        update(percentComplete)
     }
     
     open override func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -109,23 +111,15 @@ open class PageViewController: WorkaroundCollectionViewController {
         return cell
     }
     
-    var centerIndexPath: IndexPath? {
-        let x = collectionView.contentOffset.x + collectionView.bounds.width / 2
-        let y = collectionView.bounds.height / 2
-        return collectionView.indexPathForItem(at: CGPoint(x: x, y: y))
-    }
-    
     public func reloadData() {
         hostedViewControllers.values.forEach({ $0.removeFromParent() })
         hostedViewControllers = [:]
         CATransaction.begin()
         CATransaction.setCompletionBlock { [unowned self] in
-            if let centerIndexPath {
-                pageTabBar.setIndicator(Double(centerIndexPath.section))
+            if let indexPathForCenterItem {
+                pageTabBar.setIndicator(Double(indexPathForCenterItem.section))
             }
             pageTabBar.indicatorView.isHidden = numberOfSections(in: collectionView) == 0
-            
-            update(percentComplete)
         }
         pageTabBar.reloadData()
         collectionView.reloadData()
