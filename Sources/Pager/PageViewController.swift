@@ -6,6 +6,8 @@ open class PageViewController: WorkaroundCollectionViewController {
     
     public let pageTabBar = PageTabBar()
     var hostedViewControllers: [IndexPath : UIViewController] = [:]
+    let topBluringView = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
+    let bottomBluringView = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
     
     let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
@@ -13,15 +15,43 @@ open class PageViewController: WorkaroundCollectionViewController {
     )
     
     public init() {
-        super.init(collectionViewLayout: UICollectionViewLayout())
+        let layout = UICollectionViewCompositionalLayout.paging(column: 1)
+        super.init(collectionViewLayout: layout)
     }
     
     required public init?(coder: NSCoder) {
         super.init(coder: coder)
     }
     
+    public var columnCount: Int = 1 {
+        didSet {
+            let layout = UICollectionViewCompositionalLayout.paging(column: columnCount)
+            collectionView.setCollectionViewLayout(layout, animated: false)
+            topBluringView.isHidden = columnCount == 1
+            bottomBluringView.isHidden = columnCount == 1
+        }
+    }
+    
     open override func loadView() {
         super.loadView()
+        
+        topBluringView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(topBluringView)
+        NSLayoutConstraint.activate([
+            topBluringView.topAnchor.constraint(equalTo: view.topAnchor),
+            topBluringView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            topBluringView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: topBluringView.trailingAnchor),
+        ])
+        
+        bottomBluringView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(bottomBluringView)
+        NSLayoutConstraint.activate([
+            bottomBluringView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            bottomBluringView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            bottomBluringView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: bottomBluringView.trailingAnchor),
+        ])
         
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.showsVerticalScrollIndicator = false
@@ -29,8 +59,6 @@ open class PageViewController: WorkaroundCollectionViewController {
         collectionView.bounces = false
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-        let layout = UICollectionViewCompositionalLayout.paging()
-        collectionView.setCollectionViewLayout(layout, animated: false)
     }
     
     var percentComplete: CGFloat {
@@ -45,14 +73,22 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
     
     func update(_ percentComplete: Double) {
-        pageTabBar.setIndicator(percentComplete)
+        pageTabBar.setIndicator(percentComplete, columnCount: columnCount)
         
-        let index = Int(percentComplete.rounded())
-        let indexPath = IndexPath(item: 0, section: index)
-        let viewController = hostedViewControllers[indexPath]
-        let contentScrollView = viewController?.contentScrollView(for: .top)
-        let scrollView = contentScrollView ?? (viewController?.view as? UIScrollView)
-        setContentScrollView(scrollView, for: .top)
+        if columnCount == 1 {
+            let index = Int(percentComplete.rounded())
+            let indexPath = IndexPath(item: 0, section: index)
+            let viewController = hostedViewControllers[indexPath]
+            let topContentScrollView = viewController?.contentScrollView(for: .top)
+            let topScrollView = topContentScrollView ?? (viewController?.view as? UIScrollView)
+            setContentScrollView(topScrollView, for: .top)
+            
+            let bottomcontentScrollView = viewController?.contentScrollView(for: .bottom)
+            let bottomScrollView = bottomcontentScrollView ?? (viewController?.view as? UIScrollView)
+            setContentScrollView(bottomScrollView, for: .bottom)
+        } else {
+            setContentScrollView(nil, for: .all)
+        }
     }
     
     open override func viewDidLoad() {
@@ -63,6 +99,11 @@ open class PageViewController: WorkaroundCollectionViewController {
     
     open override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        update(percentComplete)
+    }
+    
+    open override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+//        super.scrollViewDidEndDecelerating(scrollView)
         update(percentComplete)
     }
     
@@ -117,7 +158,10 @@ open class PageViewController: WorkaroundCollectionViewController {
         CATransaction.begin()
         CATransaction.setCompletionBlock { [unowned self] in
             if let indexPathForCenterItem {
-                pageTabBar.setIndicator(Double(indexPathForCenterItem.section))
+                pageTabBar.setIndicator(
+                    Double(indexPathForCenterItem.section),
+                    columnCount: columnCount
+                )
             }
             pageTabBar.indicatorView.isHidden = numberOfSections(in: collectionView) == 0
         }

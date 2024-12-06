@@ -1,7 +1,7 @@
 import UIKit
 
 extension UICollectionViewLayout {
-    static func paging() -> UICollectionViewCompositionalLayout {
+    static func paging(column: Int = 1) -> UICollectionViewCompositionalLayout {
         let configuration = UICollectionViewCompositionalLayoutConfiguration()
         configuration.scrollDirection = .horizontal
         configuration.contentInsetsReference = .automatic
@@ -13,7 +13,7 @@ extension UICollectionViewLayout {
                 )
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
                 let groupSize = NSCollectionLayoutSize(
-                    widthDimension: .fractionalWidth(1),
+                    widthDimension: .fractionalWidth(1.0 / Double(column)),
                     heightDimension: .fractionalHeight(1)
                 )
                 let group = NSCollectionLayoutGroup.horizontal(
@@ -23,6 +23,7 @@ extension UICollectionViewLayout {
                 )
                 let section = NSCollectionLayoutSection(group: group)
                 section.orthogonalScrollingBehavior = .paging
+                section.interGroupSpacing = 10
                 return section
             },
             configuration: configuration

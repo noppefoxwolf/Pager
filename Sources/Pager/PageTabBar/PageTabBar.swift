@@ -71,44 +71,73 @@ extension PageTabBar: UICollectionViewDataSource {
         )
     }
     
-    func setIndicator(_ position: Double) {
-        let section = 0
+    func setIndicator(_ position: Double, columnCount: Int) {
+        let fixedPosition = position * Double(columnCount)
+        let leftItemIndex = Int(floor(fixedPosition))
+        let rightItemIndex = leftItemIndex + (columnCount - 1)
+        let fractionCompleted = fixedPosition - floor(fixedPosition)
         
-        let prevIndex = Int(floor(position))
-        let currentIndex = Int(ceil(position))
-        let fractionCompleted = position - floor(position)
+        let minX = minX(index: leftItemIndex, fractionCompleted: fractionCompleted) ?? 0
+        let maxX = maxX(index: rightItemIndex, fractionCompleted: fractionCompleted) ?? maxX(index: leftItemIndex, fractionCompleted: fractionCompleted)
         
-        let focusIndex = Int(position.rounded())
-        let indexPath = IndexPath(row: focusIndex, section: section)
-        
-        if rowSequence(for: section).contains(focusIndex) {
-            if let indexPathsForSelectedItems, !indexPathsForSelectedItems.isEmpty, !indexPathsForSelectedItems.contains(indexPath) {
-                feedbackGenerator.selectionChanged()
-            }
-            selectItem(
-                at: indexPath,
-                animated: true,
-                scrollPosition: .centeredHorizontally
-            )
-        }
-        
-        guard let prevCell = cellForItem(at: IndexPath(row: prevIndex, section: section)) else { return }
-        let currentCell = cellForItem(at: IndexPath(row: currentIndex, section: section)) ?? prevCell
-        guard let prevLabel = prevCell.contentView.subviews.first(where: { $0 is UILabel }) else { return }
-        guard let currentLabel = currentCell.contentView.subviews.first(where: { $0 is UILabel }) else { return }
-
-        let prevWidth = prevLabel.bounds.width
-        let prevCenter = prevCell.center
-        let currentWidth = currentLabel.bounds.width
-        let currentCenter = currentCell.center
-
-        indicatorView.frame.size.width =
-        prevWidth + ((currentWidth - prevWidth) * fractionCompleted)
+        indicatorView.frame.size.width = (maxX ?? minX) - minX
         indicatorView.frame.size.height = 4
+        indicatorView.frame.origin.x = minX
         indicatorView.frame.origin.y = bounds.height - 4
-
-        indicatorView.center.x =
-        prevCenter.x + ((currentCenter.x - prevCenter.x) * fractionCompleted)
+    }
+    
+    func minX(index: Int, fractionCompleted: Double) -> CGFloat? {
+        guard let minX = self.frame(at: index)?.minX else { return nil }
+        let nextMinX = self.frame(at: index + 1)?.minX ?? minX
+        return minX + ((nextMinX - minX) * fractionCompleted)
+    }
+    
+    func maxX(index: Int, fractionCompleted: Double) -> CGFloat? {
+        guard let maxX = self.frame(at: index)?.maxX else { return nil }
+        let nextMaxX = self.frame(at: index + 1)?.maxX ?? maxX
+        return maxX + ((nextMaxX - maxX) * fractionCompleted)
+    }
+    
+    
+//        let section = 0
+//        let fixedPosition = position * Double(columnCount)
+//        
+//        let leftItemIndex = Int(floor(fixedPosition))
+//        let rightItemIndex = Int(floor(fixedPosition)) + (columnCount - 1)//Int(ceil(fixedPosition)) + (columnCount - 1)
+//        let fractionCompleted = fixedPosition - floor(fixedPosition)
+//        
+////        logger.debug("position: \(fixedPosition)")
+//        logger.debug("left: \(leftItemIndex), right: \(rightItemIndex), fraction: \(fractionCompleted)")
+//        
+//        let focusIndex = Int(fixedPosition.rounded())
+//        let indexPath = IndexPath(row: focusIndex, section: section)
+//        
+//        if rowSequence(for: section).contains(focusIndex) {
+//            if let indexPathsForSelectedItems, !indexPathsForSelectedItems.isEmpty, !indexPathsForSelectedItems.contains(indexPath) {
+//                feedbackGenerator.selectionChanged()
+//            }
+//            selectItem(
+//                at: indexPath,
+//                animated: true,
+//                scrollPosition: .centeredHorizontally
+//            )
+//        }
+//        
+//        guard let leftItemCell = cellForItem(at: IndexPath(row: leftItemIndex, section: section)) else { return }
+//        let rightItemCell = cellForItem(at: IndexPath(row: rightItemIndex, section: section))
+//        guard let leftItemLabel = leftItemCell.contentView.subviews.first(where: { $0 is UILabel }) else { return }
+//        let rightItemLabel = rightItemCell?.contentView.subviews.first(where: { $0 is UILabel })
+//
+//        let minX = leftItemLabel.convert(leftItemLabel.bounds, to: self).minX
+//        let maxX = (rightItemLabel ?? leftItemLabel).convert((rightItemLabel ?? leftItemLabel).bounds, to: self).maxX
+//    }
+    
+    func frame(at index: Int) -> CGRect? {
+        let indexPath = IndexPath(row: index, section: 0)
+        let cell = cellForItem(at: indexPath)
+        let label = cell?.contentView.subviews.first(where: { $0 is UILabel })
+        guard let label else { return nil }
+        return label.convert(label.bounds, to: self)
     }
 }
 

@@ -41,6 +41,17 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
             decrementButton,
         ]
         
+        let toggle = UISwitch()
+        toggle.addAction(UIAction { [unowned self] _ in
+            columnCount = toggle.isOn ? 3 : 1
+        }, for: .primaryActionTriggered)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: toggle)
+        
+        setToolbarItems([
+            .init(systemItem: .action)
+        ], animated: false)
+        navigationController?.isToolbarHidden = false
+        
         reloadData()
     }
     
