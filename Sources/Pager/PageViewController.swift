@@ -52,7 +52,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         let viewController = hostedViewControllers[indexPath]
         let contentScrollView = viewController?.contentScrollView(for: .top)
         let scrollView = contentScrollView ?? (viewController?.view as? UIScrollView)
-        setContentScrollView(scrollView, for: .top)
+        setContentScrollView(scrollView, for: [.top, .bottom])
     }
     
     open override func viewDidLoad() {
