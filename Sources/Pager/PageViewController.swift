@@ -13,11 +13,12 @@ open class PageViewController: WorkaroundCollectionViewController {
     )
     
     public init() {
-        super.init(collectionViewLayout: UICollectionViewLayout())
+        super.init(collectionViewLayout: .paging())
     }
     
     required public init?(coder: NSCoder) {
         super.init(coder: coder)
+        collectionView.setCollectionViewLayout(.paging(), animated: false)
     }
     
     open override func loadView() {
@@ -29,8 +30,6 @@ open class PageViewController: WorkaroundCollectionViewController {
         collectionView.bounces = false
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-        let layout = UICollectionViewCompositionalLayout.paging()
-        collectionView.setCollectionViewLayout(layout, animated: false)
     }
     
     var percentComplete: CGFloat {
