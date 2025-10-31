@@ -27,4 +27,8 @@ final class PageItemViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func contentScrollView(for edge: NSDirectionalRectEdge) -> UIScrollView? {
+        viewController.contentScrollView(for: edge)
+    }
 }
