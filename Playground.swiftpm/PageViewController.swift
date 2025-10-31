@@ -8,9 +8,22 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
         pageTabBar.tabBarDataSource = self
         
         navigationItem.title = "Pager Example"
-        let palette = NavigationBarPalette(contentView: pageTabBar)
-        palette.setPreferredHeight(34)
-        navigationItem.setBottomPalette(palette)
+        
+        let interaction = UIScrollEdgeElementContainerInteraction()
+        interaction.scrollView = collectionView
+        interaction.edge = .top
+        pageTabBar.addInteraction(interaction)
+        collectionView.superview!.addSubview(pageTabBar)
+        pageTabBar.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            pageTabBar.heightAnchor.constraint(equalToConstant: 34),
+        ])
+        
+        collectionView.topEdgeEffect.style = .hard
+        itemContentInsets.top = 34
         
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),
@@ -73,6 +86,3 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
         }
     }
 }
-
-
-

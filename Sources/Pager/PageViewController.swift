@@ -7,6 +7,12 @@ open class PageViewController: WorkaroundCollectionViewController {
     public let pageTabBar = PageTabBar()
     var hostedViewControllers: [IndexPath : UIViewController] = [:]
     
+    public var itemContentInsets: UIEdgeInsets = .zero {
+        didSet {
+            reloadData()
+        }
+    }
+    
     let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
         category: #file
@@ -83,7 +89,9 @@ open class PageViewController: WorkaroundCollectionViewController {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
         cell.contentView.subviews.forEach({ $0.removeFromSuperview() })
         
-        if let viewController = dataSource?.viewController(for: self, at: indexPath.section) {
+        if let contentViewController = dataSource?.viewController(for: self, at: indexPath.section) {
+            let viewController = PageItemViewController(viewController: contentViewController)
+            viewController.additionalSafeAreaInsets = itemContentInsets
             viewController.willMove(toParent: nil)
             viewController.view.removeFromSuperview()
             viewController.removeFromParent()
