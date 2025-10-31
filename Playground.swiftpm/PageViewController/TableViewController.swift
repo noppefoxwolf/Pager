@@ -25,5 +25,6 @@ final class TableViewController: UITableViewController {
         snapshot.appendItems((0..<100).map({ _ in Item() }), toSection: .items)
         
         dataSource.apply(snapshot)
+        
     }
 }
