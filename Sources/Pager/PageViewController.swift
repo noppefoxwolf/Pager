@@ -87,17 +87,13 @@ open class PageViewController: WorkaroundCollectionViewController {
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
+        removeHostedViewController(at: indexPath)
         cell.contentView.subviews.forEach({ $0.removeFromSuperview() })
         
         if let contentViewController = dataSource?.viewController(for: self, at: indexPath.section) {
             let viewController = PageItemViewController(viewController: contentViewController)
             viewController.additionalSafeAreaInsets = itemContentInsets
-            viewController.willMove(toParent: nil)
-            viewController.view.removeFromSuperview()
-            viewController.removeFromParent()
-            viewController.didMove(toParent: nil)
             
-            viewController.willMove(toParent: self)
             addChild(viewController)
             hostedViewControllers[indexPath] = viewController
             cell.contentView.addSubview(viewController.view)
@@ -119,8 +115,8 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
     
     public func reloadData() {
-        hostedViewControllers.values.forEach({ $0.removeFromParent() })
-        hostedViewControllers = [:]
+        hostedViewControllers.values.forEach({ detachHostedViewController($0) })
+        hostedViewControllers.removeAll()
         CATransaction.begin()
         CATransaction.setCompletionBlock { [unowned self] in
             if let indexPathForCenterItem {
@@ -163,5 +159,18 @@ extension PageViewController: PageTabBarDelegate {
             at: .centeredHorizontally,
             animated: true
         )
+    }
+}
+
+private extension PageViewController {
+    func removeHostedViewController(at indexPath: IndexPath) {
+        guard let viewController = hostedViewControllers.removeValue(forKey: indexPath) else { return }
+        detachHostedViewController(viewController)
+    }
+    
+    func detachHostedViewController(_ viewController: UIViewController) {
+        viewController.willMove(toParent: nil)
+        viewController.view.removeFromSuperview()
+        viewController.removeFromParent()
     }
 }
