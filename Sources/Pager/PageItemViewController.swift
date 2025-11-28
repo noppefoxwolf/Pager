@@ -29,6 +29,7 @@ final class PageItemViewController: UIViewController {
     }
     
     override func contentScrollView(for edge: NSDirectionalRectEdge) -> UIScrollView? {
-        viewController.contentScrollView(for: edge)
+        guard isViewLoaded else { return nil }
+        return viewController.contentScrollView(for: edge)
     }
 }
