@@ -62,8 +62,8 @@ public final class PageTabBar: UICollectionView {
         guard rowSequence(for: section).contains(focusIndex) else { return }
         
         // Trigger haptic feedback when selection changes
-        if let selectedItems = indexPathsForSelectedItems,
-           !selectedItems.contains(indexPath) {
+        let selectedItems = indexPathsForSelectedItems ?? []
+        if selectedItems.allSatisfy { $0 != indexPath } {
             feedbackGenerator.selectionChanged()
             selectItem(at: indexPath, animated: false, scrollPosition: [])
         }
