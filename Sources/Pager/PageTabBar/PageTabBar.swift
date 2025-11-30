@@ -48,6 +48,56 @@ public final class PageTabBar: UICollectionView {
             cell.contentConfiguration = contentConfiguration
         }
     )
+    
+    func setIndicator(_ position: Double) {
+        updateSelectedTabItem(for: position)
+        updateIndicatorFrame(for: position)
+    }
+    
+    private func updateSelectedTabItem(for position: Double) {
+        let section = 0
+        let focusIndex = Int(position.rounded())
+        let indexPath = IndexPath(row: focusIndex, section: section)
+        
+        guard rowSequence(for: section).contains(focusIndex) else { return }
+        
+        // Trigger haptic feedback when selection changes
+        if let selectedItems = indexPathsForSelectedItems,
+           !selectedItems.isEmpty,
+           !selectedItems.contains(indexPath) {
+            feedbackGenerator.selectionChanged()
+            selectItem(at: indexPath, animated: false, scrollPosition: [])
+        }
+    }
+    
+    private func updateIndicatorFrame(for position: Double) {
+        let section = 0
+        let prevIndex = Int(floor(position))
+        let nextIndex = Int(ceil(position))
+        let progress = position - floor(position)
+        
+        guard let prevCell = cellForItem(at: IndexPath(row: prevIndex, section: section)),
+              let prevLabel = prevCell.contentView.subviews.first(where: { $0 is UILabel }) as? UILabel else {
+            return
+        }
+        
+        let nextCell = cellForItem(at: IndexPath(row: nextIndex, section: section)) ?? prevCell
+        let nextLabel = nextCell.contentView.subviews.first(where: { $0 is UILabel }) as? UILabel ?? prevLabel
+        
+        // Calculate interpolated width and position
+        let startWidth = prevLabel.bounds.width
+        let endWidth = nextLabel.bounds.width
+        let interpolatedWidth = startWidth + (endWidth - startWidth) * progress
+        
+        let startCenterX = prevCell.center.x
+        let endCenterX = nextCell.center.x
+        let interpolatedCenterX = startCenterX + (endCenterX - startCenterX) * progress
+        
+        // Update indicator frame
+        indicatorView.frame.size = CGSize(width: interpolatedWidth, height: 4)
+        indicatorView.frame.origin.y = bounds.height - 4
+        indicatorView.center.x = interpolatedCenterX
+    }
 }
 
 extension PageTabBar: UICollectionViewDataSource {
@@ -69,46 +119,6 @@ extension PageTabBar: UICollectionViewDataSource {
             for: indexPath,
             item: item
         )
-    }
-    
-    func setIndicator(_ position: Double) {
-        let section = 0
-        
-        let prevIndex = Int(floor(position))
-        let currentIndex = Int(ceil(position))
-        let fractionCompleted = position - floor(position)
-        
-        let focusIndex = Int(position.rounded())
-        let indexPath = IndexPath(row: focusIndex, section: section)
-        
-        if rowSequence(for: section).contains(focusIndex) {
-            if let indexPathsForSelectedItems, !indexPathsForSelectedItems.isEmpty, !indexPathsForSelectedItems.contains(indexPath) {
-                feedbackGenerator.selectionChanged()
-            }
-            selectItem(
-                at: indexPath,
-                animated: false,
-                scrollPosition: []
-            )
-        }
-        
-        guard let prevCell = cellForItem(at: IndexPath(row: prevIndex, section: section)) else { return }
-        let currentCell = cellForItem(at: IndexPath(row: currentIndex, section: section)) ?? prevCell
-        guard let prevLabel = prevCell.contentView.subviews.first(where: { $0 is UILabel }) else { return }
-        guard let currentLabel = currentCell.contentView.subviews.first(where: { $0 is UILabel }) else { return }
-
-        let prevWidth = prevLabel.bounds.width
-        let prevCenter = prevCell.center
-        let currentWidth = currentLabel.bounds.width
-        let currentCenter = currentCell.center
-
-        indicatorView.frame.size.width =
-        prevWidth + ((currentWidth - prevWidth) * fractionCompleted)
-        indicatorView.frame.size.height = 4
-        indicatorView.frame.origin.y = bounds.height - 4
-
-        indicatorView.center.x =
-        prevCenter.x + ((currentCenter.x - prevCenter.x) * fractionCompleted)
     }
 }
 
