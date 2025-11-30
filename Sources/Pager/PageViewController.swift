@@ -43,6 +43,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         pageTabBar.tabBarDelegate = self
     }
     
+    // called when scrolling
     open override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         update(percentComplete)
@@ -130,14 +131,17 @@ open class PageViewController: WorkaroundCollectionViewController {
     
     func update(_ percentComplete: Double) {
         pageTabBar.setIndicator(percentComplete)
-        
+        setPreferredContentScrollView()
+    }
+    
+    func setPreferredContentScrollView() {
         let index = Int(percentComplete.rounded())
         let indexPath = IndexPath(item: 0, section: index)
         let viewController = hostedViewControllers[indexPath]
         let contentScrollView = viewController?.contentScrollView(for: .top)
         let scrollView = contentScrollView ?? (viewController?.view as? UIScrollView)
         setContentScrollView(scrollView, for: [.top, .bottom])
-    } 
+    }
     
     public func reloadData() {
         hostedViewControllers.values.forEach({ detachHostedViewController($0) })
