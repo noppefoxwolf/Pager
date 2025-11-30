@@ -21,7 +21,16 @@ xcrun simctl list devices available | grep "iPhone" | grep -v "Pro" | grep -v "P
 
 ## Test Execution Steps
 
-### 1. Get Device ID
+### 1. Check Available Schemes
+
+First, identify the correct scheme name for this project:
+
+```bash
+# List available schemes
+xcodebuild -list
+```
+
+### 2. Get Device ID
 
 Obtain the ID for standard iPhone devices (with latest OS) such as iPhone 17:
 
@@ -31,18 +40,18 @@ DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 17" | head -1 | g
 echo "Device ID: $DEVICE_ID"
 ```
 
-### 2. Build Project
+### 3. Build Project
 
 ```bash
-# Build Swift package
-xcodebuild -scheme CollectionViewDistributionalLayout -destination "platform=iOS Simulator,id=$DEVICE_ID" build
+# Build Swift package (replace SCHEME_NAME with the actual scheme from step 1)
+xcodebuild -scheme SCHEME_NAME -destination "platform=iOS Simulator,id=$DEVICE_ID" build
 ```
 
-### 3. Run Tests
+### 4. Run Tests
 
 ```bash
-# Execute tests
-xcodebuild -scheme CollectionViewDistributionalLayout -destination "platform=iOS Simulator,id=$DEVICE_ID" test
+# Execute tests (replace SCHEME_NAME with the actual scheme from step 1)
+xcodebuild -scheme SCHEME_NAME -destination "platform=iOS Simulator,id=$DEVICE_ID" test
 ```
 
 ## Useful Command Examples
@@ -50,18 +59,18 @@ xcodebuild -scheme CollectionViewDistributionalLayout -destination "platform=iOS
 ### One-liner Execution
 
 ```bash
-# Get device ID and run tests in one command
-DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 17" | head -1 | grep -o '[0-9A-F]\{8\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{12\}') && xcodebuild -scheme CollectionViewDistributionalLayout -destination "platform=iOS Simulator,id=$DEVICE_ID" test
+# Get device ID and run tests in one command (replace SCHEME_NAME with actual scheme)
+DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 17" | head -1 | grep -o '[0-9A-F]\{8\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{12\}') && xcodebuild -scheme SCHEME_NAME -destination "platform=iOS Simulator,id=$DEVICE_ID" test
 ```
 
 ### Testing on Multiple Devices
 
 ```bash
-# Test on iPhone 17 and iPhone 16
+# Test on iPhone 17 and iPhone 16 (replace SCHEME_NAME with actual scheme)
 for device in "iPhone 17" "iPhone 16"; do
     DEVICE_ID=$(xcrun simctl list devices available | grep "$device" | head -1 | grep -o '[0-9A-F]\{8\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{12\}')
     echo "Testing on $device (ID: $DEVICE_ID)"
-    xcodebuild -scheme CollectionViewDistributionalLayout -destination "platform=iOS Simulator,id=$DEVICE_ID" test
+    xcodebuild -scheme SCHEME_NAME -destination "platform=iOS Simulator,id=$DEVICE_ID" test
 done
 ```
 
@@ -74,7 +83,7 @@ done
   ```
 - If tests fail, check detailed logs:
   ```bash
-  xcodebuild -scheme CollectionViewDistributionalLayout -destination "platform=iOS Simulator,id=$DEVICE_ID" test -verbose
+  xcodebuild -scheme SCHEME_NAME -destination "platform=iOS Simulator,id=$DEVICE_ID" test -verbose
   ```
 
 ## Important Notes
