@@ -92,3 +92,13 @@ done
 - Use standard models rather than Pro, Plus, or Max variants for testing
 - Use simulators with the latest iOS versions installed
 
+## Swift Package Manager Commands Limitations
+
+**⚠️ `swift run` and `swift test` commands do not work in this project** due to the following reasons:
+
+- **iOS Target**: This library targets iOS platforms, which require simulators or physical devices to run. Swift Package Manager's `swift run` and `swift test` commands only work with macOS-compatible targets.
+- **Xcode Project Integration**: When a Swift package is integrated with Xcode projects (`.xcodeproj`) or workspaces, the build system expects to use Xcode's build tools rather than SPM directly.
+- **Framework Dependencies**: iOS libraries often depend on iOS-specific frameworks that are not available in the SPM command-line environment.
+
+**Use `xcodebuild` instead** as documented above for proper iOS testing and building.
+
