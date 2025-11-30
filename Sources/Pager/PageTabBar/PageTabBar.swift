@@ -67,7 +67,7 @@ public final class PageTabBar: UICollectionView {
         
         if position.truncatingRemainder(dividingBy: 1) == 0 {
             feedbackGenerator.selectionChanged()
-            selectItem(at: indexPath, animated: false, scrollPosition: [])
+            selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
         }
     }
     
