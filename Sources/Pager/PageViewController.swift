@@ -38,20 +38,6 @@ open class PageViewController: WorkaroundCollectionViewController {
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
     }
     
-    var percentComplete: CGFloat {
-        let width = collectionView.bounds.size.width
-        guard width > 0 else { return 0.0 }
-        let value = collectionView.contentOffset.x / width
-        guard !value.isNaN && value.isFinite else { return 0.0 }
-        return max(0, min(value, CGFloat(numberOfSections(in: collectionView) - 1)))
-    }
-    
-    var indexPathForCenterItem: IndexPath? {
-        let x = collectionView.contentOffset.x + collectionView.bounds.width / 2
-        let y = collectionView.bounds.height / 2
-        return collectionView.indexPathForItem(at: CGPoint(x: x, y: y))
-    }
-    
     func update(_ percentComplete: Double) {
         pageTabBar.setIndicator(percentComplete)
         
@@ -117,21 +103,6 @@ open class PageViewController: WorkaroundCollectionViewController {
         return cell
     }
     
-    public func reloadData() {
-        hostedViewControllers.values.forEach({ detachHostedViewController($0) })
-        hostedViewControllers.removeAll()
-        CATransaction.begin()
-        CATransaction.setCompletionBlock { [unowned self] in
-            if let indexPathForCenterItem {
-                pageTabBar.setIndicator(Double(indexPathForCenterItem.section))
-            }
-            pageTabBar.indicatorView.isHidden = numberOfSections(in: collectionView) == 0
-        }
-        pageTabBar.reloadData()
-        collectionView.reloadData()
-        CATransaction.commit()
-    }
-    
     open override func viewWillTransition(
         to size: CGSize,
         with coordinator: UIViewControllerTransitionCoordinator
@@ -153,6 +124,35 @@ open class PageViewController: WorkaroundCollectionViewController {
             },
             completion: nil
         )
+    }
+    
+    var percentComplete: CGFloat {
+        let width = collectionView.bounds.size.width
+        guard width > 0 else { return 0.0 }
+        let value = collectionView.contentOffset.x / width
+        guard !value.isNaN && value.isFinite else { return 0.0 }
+        return max(0, min(value, CGFloat(numberOfSections(in: collectionView) - 1)))
+    }
+    
+    var indexPathForCenterItem: IndexPath? {
+        let x = collectionView.contentOffset.x + collectionView.bounds.width / 2
+        let y = collectionView.bounds.height / 2
+        return collectionView.indexPathForItem(at: CGPoint(x: x, y: y))
+    }
+    
+    public func reloadData() {
+        hostedViewControllers.values.forEach({ detachHostedViewController($0) })
+        hostedViewControllers.removeAll()
+        CATransaction.begin()
+        CATransaction.setCompletionBlock { [unowned self] in
+            if let indexPathForCenterItem {
+                pageTabBar.setIndicator(Double(indexPathForCenterItem.section))
+            }
+            pageTabBar.indicatorView.isHidden = numberOfSections(in: collectionView) == 0
+        }
+        pageTabBar.reloadData()
+        collectionView.reloadData()
+        CATransaction.commit()
     }
 }
 
