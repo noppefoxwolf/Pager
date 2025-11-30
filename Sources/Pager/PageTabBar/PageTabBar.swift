@@ -25,6 +25,7 @@ public final class PageTabBar: UICollectionView {
         
         feedbackGenerator.prepare()
         
+        indicatorView.translatesAutoresizingMaskIntoConstraints = true
         addSubview(indicatorView)
     }
     
