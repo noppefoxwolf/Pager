@@ -87,8 +87,8 @@ extension PageTabBar: UICollectionViewDataSource {
             }
             selectItem(
                 at: indexPath,
-                animated: true,
-                scrollPosition: .centeredHorizontally
+                animated: false,
+                scrollPosition: []
             )
         }
         
