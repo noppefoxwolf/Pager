@@ -42,7 +42,8 @@ open class PageViewController: WorkaroundCollectionViewController {
         let width = collectionView.bounds.size.width
         guard width > 0 else { return 0.0 }
         let value = collectionView.contentOffset.x / width
-        return value.isNaN ? 0.0 : value
+        guard !value.isNaN && value.isFinite else { return 0.0 }
+        return max(0, min(value, CGFloat(numberOfSections(in: collectionView) - 1)))
     }
     
     var indexPathForCenterItem: IndexPath? {
