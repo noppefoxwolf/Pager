@@ -22,9 +22,8 @@ open class PageViewController: WorkaroundCollectionViewController {
         super.init(collectionViewLayout: .paging())
     }
     
-    required public init?(coder: NSCoder) {
-        super.init(coder: coder)
-        collectionView.setCollectionViewLayout(.paging(), animated: false)
+    @MainActor required public init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     open override func loadView() {
