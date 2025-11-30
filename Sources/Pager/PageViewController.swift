@@ -120,7 +120,8 @@ open class PageViewController: WorkaroundCollectionViewController {
         guard width > 0 else { return 0.0 }
         let value = collectionView.contentOffset.x / width
         guard !value.isNaN && value.isFinite else { return 0.0 }
-        return max(0, min(value, CGFloat(numberOfSections(in: collectionView) - 1)))
+        let maxValue = CGFloat(numberOfSections(in: collectionView) - 1)
+        return max(0, min(value, maxValue))
     }
     
     var indexPathForCenterItem: IndexPath? {
@@ -131,10 +132,10 @@ open class PageViewController: WorkaroundCollectionViewController {
     
     func update(_ percentComplete: Double) {
         pageTabBar.setIndicator(percentComplete)
-        setPreferredContentScrollView()
+        setPreferredContentScrollView(percentComplete)
     }
     
-    func setPreferredContentScrollView() {
+    func setPreferredContentScrollView(_ percentComplete: Double) {
         let index = Int(percentComplete.rounded())
         let indexPath = IndexPath(item: 0, section: index)
         let viewController = hostedViewControllers[indexPath]
