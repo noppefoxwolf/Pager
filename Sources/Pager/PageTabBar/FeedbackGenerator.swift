@@ -21,6 +21,7 @@ final class FeedbackGenerator {
     
     func selectionChanged() {
         #if os(iOS)
+        logger.debug("\(#function)")
         feedbackGenerator.selectionChanged()
         #endif
     }
