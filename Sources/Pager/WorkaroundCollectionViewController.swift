@@ -10,6 +10,7 @@ open class WorkaroundCollectionViewController: UICollectionViewController {
         let offset = collectionView.contentOffset
         let width = collectionView.bounds.size.width
         
+        guard width > 0 else { return }
         let index = round(offset.x / width)
         guard index.isNormal else { return }
         
