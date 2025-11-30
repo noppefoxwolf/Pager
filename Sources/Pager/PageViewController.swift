@@ -39,7 +39,9 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
     
     var percentComplete: CGFloat {
-        let value = collectionView.contentOffset.x / collectionView.visibleSize.width
+        let width = collectionView.bounds.size.width
+        guard width > 0 else { return 0.0 }
+        let value = collectionView.contentOffset.x / width
         return value.isNaN ? 0.0 : value
     }
     
@@ -138,6 +140,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         let offset = pageTabBar.contentOffset
         let width = pageTabBar.bounds.size.width
         
+        guard width > 0 else { return }
         let index = round(offset.x / width)
         guard index.isNormal else { return }
         
