@@ -121,7 +121,10 @@ open class PageViewController: WorkaroundCollectionViewController {
         let value = collectionView.contentOffset.x / width
         guard !value.isNaN && value.isFinite else { return 0.0 }
         let maxValue = CGFloat(numberOfSections(in: collectionView) - 1)
-        return max(0, min(value, maxValue))
+        let minValue = 0.0
+        let range = minValue...maxValue
+        let clampedValue = min(range.upperBound, max(range.lowerBound, value))
+        return clampedValue
     }
     
     var indexPathForCenterItem: IndexPath? {
