@@ -37,17 +37,6 @@ open class PageViewController: WorkaroundCollectionViewController {
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
     }
     
-    func update(_ percentComplete: Double) {
-        pageTabBar.setIndicator(percentComplete)
-        
-        let index = Int(percentComplete.rounded())
-        let indexPath = IndexPath(item: 0, section: index)
-        let viewController = hostedViewControllers[indexPath]
-        let contentScrollView = viewController?.contentScrollView(for: .top)
-        let scrollView = contentScrollView ?? (viewController?.view as? UIScrollView)
-        setContentScrollView(scrollView, for: [.top, .bottom])
-    }
-    
     open override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -138,6 +127,17 @@ open class PageViewController: WorkaroundCollectionViewController {
         let y = collectionView.bounds.height / 2
         return collectionView.indexPathForItem(at: CGPoint(x: x, y: y))
     }
+    
+    func update(_ percentComplete: Double) {
+        pageTabBar.setIndicator(percentComplete)
+        
+        let index = Int(percentComplete.rounded())
+        let indexPath = IndexPath(item: 0, section: index)
+        let viewController = hostedViewControllers[indexPath]
+        let contentScrollView = viewController?.contentScrollView(for: .top)
+        let scrollView = contentScrollView ?? (viewController?.view as? UIScrollView)
+        setContentScrollView(scrollView, for: [.top, .bottom])
+    } 
     
     public func reloadData() {
         hostedViewControllers.values.forEach({ detachHostedViewController($0) })
