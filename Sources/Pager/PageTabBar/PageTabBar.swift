@@ -128,8 +128,7 @@ extension PageTabBar: UICollectionViewDelegate {
         _ collectionView: UICollectionView,
         didSelectItemAt indexPath: IndexPath
     ) {
-        // この時点でselectedIndexに入るが、スクロール位置が前のままなので2回changedが呼ばれてしまう
-        // deselectしても前回の値が消えるので意味がない
+        collectionView.deselectItem(at: indexPath, animated: false)
         tabBarDelegate?.pageTabBar(self, didSelected: indexPath.row)
     }
 }
