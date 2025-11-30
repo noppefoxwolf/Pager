@@ -147,6 +147,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
     
     public func reloadData() {
+        guard isViewLoaded else { return }
         hostedViewControllers.values.forEach({ detachHostedViewController($0) })
         hostedViewControllers.removeAll()
         CATransaction.begin()
