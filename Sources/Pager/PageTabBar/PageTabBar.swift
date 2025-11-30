@@ -15,7 +15,7 @@ public final class PageTabBar: UICollectionView {
     )
     
     public init() {
-        super.init(frame: .null, collectionViewLayout: CollectionViewDistributionalLayout())
+        super.init(frame: .null, collectionViewLayout: .distributional())
         backgroundColor = .clear
         delegate = self
         dataSource = self
@@ -63,7 +63,9 @@ public final class PageTabBar: UICollectionView {
         
         // Trigger haptic feedback when selection changes
         let selectedItems = indexPathsForSelectedItems ?? []
-        if selectedItems.allSatisfy { $0 != indexPath } {
+        
+        print(position)
+        if position.truncatingRemainder(dividingBy: 1) == 0 {
             feedbackGenerator.selectionChanged()
             selectItem(at: indexPath, animated: false, scrollPosition: [])
         }
@@ -126,6 +128,8 @@ extension PageTabBar: UICollectionViewDelegate {
         _ collectionView: UICollectionView,
         didSelectItemAt indexPath: IndexPath
     ) {
+        // この時点でselectedIndexに入るが、スクロール位置が前のままなので2回changedが呼ばれてしまう
+        // deselectしても前回の値が消えるので意味がない
         tabBarDelegate?.pageTabBar(self, didSelected: indexPath.row)
     }
 }
