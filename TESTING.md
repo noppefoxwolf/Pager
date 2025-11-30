@@ -1,0 +1,85 @@
+# Testing Guide
+
+This project is a Swift library for iOS applications. Use the `xcodebuild` command-line tool to run tests.
+
+## Prerequisites
+
+1. Ensure Xcode is installed
+2. Verify command line tools are configured:
+   ```bash
+   xcode-select --install
+   ```
+
+## Check Available Test Devices
+
+To run tests on the latest iOS standard devices (such as iPhone 17), first check available simulators:
+
+```bash
+# Check available iPhone devices
+xcrun simctl list devices available | grep "iPhone" | grep -v "Pro" | grep -v "Plus"
+```
+
+## Test Execution Steps
+
+### 1. Get Device ID
+
+Obtain the ID for standard iPhone devices (with latest OS) such as iPhone 17:
+
+```bash
+# Get iPhone 17 device ID
+DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 17" | head -1 | grep -o '[0-9A-F]\{8\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{12\}')
+echo "Device ID: $DEVICE_ID"
+```
+
+### 2. Build Project
+
+```bash
+# Build Swift package
+xcodebuild -scheme CollectionViewDistributionalLayout -destination "platform=iOS Simulator,id=$DEVICE_ID" build
+```
+
+### 3. Run Tests
+
+```bash
+# Execute tests
+xcodebuild -scheme CollectionViewDistributionalLayout -destination "platform=iOS Simulator,id=$DEVICE_ID" test
+```
+
+## Useful Command Examples
+
+### One-liner Execution
+
+```bash
+# Get device ID and run tests in one command
+DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 17" | head -1 | grep -o '[0-9A-F]\{8\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{12\}') && xcodebuild -scheme CollectionViewDistributionalLayout -destination "platform=iOS Simulator,id=$DEVICE_ID" test
+```
+
+### Testing on Multiple Devices
+
+```bash
+# Test on iPhone 17 and iPhone 16
+for device in "iPhone 17" "iPhone 16"; do
+    DEVICE_ID=$(xcrun simctl list devices available | grep "$device" | head -1 | grep -o '[0-9A-F]\{8\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{4\}-[0-9A-F]\{12\}')
+    echo "Testing on $device (ID: $DEVICE_ID)"
+    xcodebuild -scheme CollectionViewDistributionalLayout -destination "platform=iOS Simulator,id=$DEVICE_ID" test
+done
+```
+
+## Troubleshooting
+
+- If simulators are not found, download them in Xcode
+- If build fails, check dependencies:
+  ```bash
+  swift package resolve
+  ```
+- If tests fail, check detailed logs:
+  ```bash
+  xcodebuild -scheme CollectionViewDistributionalLayout -destination "platform=iOS Simulator,id=$DEVICE_ID" test -verbose
+  ```
+
+## Important Notes
+
+- Prioritize standard iPhone devices (iPhone 17, iPhone 16, etc.)
+- Use standard models rather than Pro, Plus, or Max variants for testing
+- Use simulators with the latest iOS versions installed
+
