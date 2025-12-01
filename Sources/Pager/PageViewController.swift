@@ -152,9 +152,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         hostedViewControllers.removeAll()
         CATransaction.begin()
         CATransaction.setCompletionBlock { [unowned self] in
-            if let indexPathForCenterItem {
-                pageTabBar.setIndicator(Double(indexPathForCenterItem.section))
-            }
+            update(percentComplete)
             pageTabBar.indicatorView.isHidden = numberOfSections(in: collectionView) == 0
         }
         pageTabBar.reloadData()
