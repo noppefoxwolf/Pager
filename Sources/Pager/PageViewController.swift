@@ -168,6 +168,8 @@ extension PageViewController: PageTabBarDelegate {
             at: .centeredHorizontally,
             animated: true
         )
+        // 既に選択済みのアイテムを選択するとスクロールが発生しないので１度呼ぶ
+        pageTabBar.setIndicator(percentComplete)
     }
 }
 
