@@ -21,10 +21,14 @@ let package = Package(
             dependencies: [
                 "CollectionViewDistributionalLayout",
                 "LabelContentConfiguration",
+                "ViewControllerContentConfiguration",
             ]
         ),
         .target(
             name: "LabelContentConfiguration"
+        ),
+        .target(
+            name: "ViewControllerContentConfiguration"
         ),
         .testTarget(
             name: "PagerTests",

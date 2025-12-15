@@ -6,7 +6,16 @@ import os
 public final class PageTabBar: UICollectionView {
     let indicatorView = PageTabBarIndicatorView()
     weak var tabBarDelegate: (any PageTabBarDelegate)? = nil
-    public weak var tabBarDataSource: (any PageTabBarDataSource)? = nil
+    lazy var tabBarDataSource = UICollectionViewDiffableDataSource<Int, PageTab>(
+        collectionView: self,
+        cellProvider: { [unowned self] _, indexPath, item in
+            dequeueConfiguredReusableCell(
+                using: cellRegistration,
+                for: indexPath,
+                item: item
+            )
+        }
+    )
     let feedbackGenerator = FeedbackGenerator()
     
     let logger = Logger(
@@ -15,10 +24,9 @@ public final class PageTabBar: UICollectionView {
     )
     
     public init() {
-        super.init(frame: .null, collectionViewLayout: .distributional())
+        super.init(frame: .zero, collectionViewLayout: .distributional())
         backgroundColor = .clear
         delegate = self
-        dataSource = self
         showsHorizontalScrollIndicator = false
         showsVerticalScrollIndicator = false
         contentInsetAdjustmentBehavior = .never
@@ -33,8 +41,8 @@ public final class PageTabBar: UICollectionView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    let cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, PageTabBarItem>(
-        handler: { cell, indexPath, item in
+    let cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, PageTab>(
+        handler: { cell, _, item in
             var contentConfiguration = cell.labelConfiguration()
             contentConfiguration.text = item.title
             contentConfiguration.textProperties = .init({ [weak cell] attributeContainer in
@@ -75,22 +83,37 @@ public final class PageTabBar: UICollectionView {
         let prevIndex = Int(floor(position))
         let nextIndex = Int(ceil(position))
         let progress = position - floor(position)
-        
-        guard let prevCell = cellForItem(at: IndexPath(row: prevIndex, section: section)),
-              let prevLabel = prevCell.contentView.subviews.first(where: { $0 is UILabel }) as? UILabel else {
+
+        guard let prevAttributes = layoutAttributesForItem(
+            at: IndexPath(row: prevIndex, section: section)
+        ) else {
             return
         }
+
+        let nextAttributes = layoutAttributesForItem(
+            at: IndexPath(row: nextIndex, section: section)
+        ) ?? prevAttributes
         
-        let nextCell = cellForItem(at: IndexPath(row: nextIndex, section: section)) ?? prevCell
-        let nextLabel = nextCell.contentView.subviews.first(where: { $0 is UILabel }) as? UILabel ?? prevLabel
+        // Prefer actual label frames (reflect font / content changes), fall back to layout attributes
+        let startFrame = labelFrame(at: prevIndex) ?? CGRect(
+            x: prevAttributes.center.x - prevAttributes.size.width / 2,
+            y: prevAttributes.frame.minY,
+            width: prevAttributes.size.width,
+            height: prevAttributes.size.height
+        )
+        let endFrame = labelFrame(at: nextIndex) ?? CGRect(
+            x: nextAttributes.center.x - nextAttributes.size.width / 2,
+            y: nextAttributes.frame.minY,
+            width: nextAttributes.size.width,
+            height: nextAttributes.size.height
+        )
         
-        // Calculate interpolated width and position
-        let startWidth = prevLabel.bounds.width
-        let endWidth = nextLabel.bounds.width
+        let startWidth = startFrame.width
+        let endWidth = endFrame.width
         let interpolatedWidth = startWidth + (endWidth - startWidth) * progress
         
-        let startCenterX = prevCell.center.x
-        let endCenterX = nextCell.center.x
+        let startCenterX = startFrame.midX
+        let endCenterX = endFrame.midX
         let interpolatedCenterX = startCenterX + (endCenterX - startCenterX) * progress
         
         // Update indicator frame
@@ -98,27 +121,14 @@ public final class PageTabBar: UICollectionView {
         indicatorView.frame.origin.y = bounds.height - 4
         indicatorView.center.x = interpolatedCenterX
     }
-}
-
-extension PageTabBar: UICollectionViewDataSource {
-    public func collectionView(
-        _ collectionView: UICollectionView,
-        numberOfItemsInSection section: Int
-    ) -> Int {
-        tabBarDataSource?.numberOfItems(in: self) ?? 0
-    }
     
-    public func collectionView(
-        _ collectionView: UICollectionView,
-        cellForItemAt indexPath: IndexPath
-    ) -> UICollectionViewCell {
-        let item = tabBarDataSource?.pageTabBar(self, controlForItemAt: indexPath.row)
-        guard let item else { fatalError() }
-        return collectionView.dequeueConfiguredReusableCell(
-            using: cellRegistration,
-            for: indexPath,
-            item: item
-        )
+    /// 現在描画されているセルからラベルのフレームを取り出し、`PageTabBar` 座標系に変換して返す
+    private func labelFrame(at index: Int) -> CGRect? {
+        let indexPath = IndexPath(row: index, section: 0)
+        guard let cell = cellForItem(at: indexPath) else { return nil }
+        let label = (cell.contentView as? LabelContentView)?.label
+        guard let label else { return nil }
+        return label.convert(label.bounds, to: self)
     }
 }
 

@@ -1,8 +1,9 @@
 import UIKit
 
-final class LabelContentView: UIView, UIContentView {
-    private let label = UILabel()
-    var configuration: UIContentConfiguration {
+package final class LabelContentView: UIView, UIContentView {
+    package let label = UILabel()
+    
+    package var configuration: UIContentConfiguration {
         didSet {
             configure(configuration: configuration)
         }
@@ -47,4 +48,3 @@ final class LabelContentView: UIView, UIContentView {
         label.attributedText = NSAttributedString(attributedString)
     }
 }
-

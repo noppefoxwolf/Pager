@@ -1,15 +1,26 @@
 import UIKit
 import os
+import ViewControllerContentConfiguration
 
 open class PageViewController: WorkaroundCollectionViewController {
-    public weak var dataSource: (any PageViewControllerDataSource)? = nil
-    
     public let pageTabBar = PageTabBar()
-    var hostedViewControllers: [IndexPath : UIViewController] = [:]
+    
+    lazy var dataSource = UICollectionViewDiffableDataSource<Int, PageTab>(
+        collectionView: collectionView,
+        cellProvider: { [unowned self] collectionView, indexPath, item in
+            collectionView.dequeueConfiguredReusableCell(
+                using: cellRegistration,
+                for: indexPath,
+                item: item
+            )
+        }
+    )
     
     public var itemContentInsets: UIEdgeInsets = .zero {
         didSet {
-            reloadData()
+            Task {
+                await reloadData()
+            }
         }
     }
     
@@ -18,7 +29,16 @@ open class PageViewController: WorkaroundCollectionViewController {
         category: #file
     )
     
-    public init() {
+    public var tabs: [PageTab] = [] {
+        didSet {
+            Task {
+                await reloadData()
+            }
+        }
+    }
+    
+    public init(tabs: [PageTab]) {
+        self.tabs = tabs
         super.init(collectionViewLayout: .paging())
     }
     
@@ -34,7 +54,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         collectionView.isPagingEnabled = true
         collectionView.bounces = false
         collectionView.contentInsetAdjustmentBehavior = .never
-        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
+        _ = cellRegistration
     }
     
     open override func viewDidLoad() {
@@ -47,48 +67,17 @@ open class PageViewController: WorkaroundCollectionViewController {
         update(percentComplete)
     }
     
-    open override func numberOfSections(in collectionView: UICollectionView) -> Int {
-        dataSource?.numberOfViewControllers(in: self) ?? 0
-    }
-    
-    open override func collectionView(
-        _ collectionView: UICollectionView,
-        numberOfItemsInSection section: Int
-    ) -> Int {
-        1
-    }
-    
-    open override func collectionView(
-        _ collectionView: UICollectionView,
-        cellForItemAt indexPath: IndexPath
-    ) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-        removeHostedViewController(at: indexPath)
-        cell.contentView.subviews.forEach({ $0.removeFromSuperview() })
-        
-        if let contentViewController = dataSource?.viewController(for: self, at: indexPath.section) {
+    lazy var cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, PageTab>(
+        handler: { [unowned self] cell, indexPath, item in
+            let contentViewController = item.viewControllerProvider(item)
             let viewController = PageItemViewController(viewController: contentViewController)
             viewController.additionalSafeAreaInsets = itemContentInsets
-            
-            addChild(viewController)
-            hostedViewControllers[indexPath] = viewController
-            cell.contentView.addSubview(viewController.view)
-            viewController.didMove(toParent: self)
-            
-            viewController.view.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                viewController.view.topAnchor.constraint(equalTo: cell.contentView.safeAreaLayoutGuide.topAnchor),
-                cell.contentView.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: viewController.view.bottomAnchor),
-                viewController.view.leadingAnchor.constraint(
-                    equalTo: cell.contentView.safeAreaLayoutGuide.leadingAnchor
-                ),
-                cell.contentView.safeAreaLayoutGuide.trailingAnchor.constraint(
-                    equalTo: viewController.view.trailingAnchor
-                ),
-            ])
+            cell.contentConfiguration = cell.viewControllerConfiguration(
+                viewController: viewController,
+                parent: self
+            )
         }
-        return cell
-    }
+    )
     
     open override func viewWillTransition(
         to size: CGSize,
@@ -118,7 +107,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         guard width > 0 else { return 0.0 }
         let value = collectionView.contentOffset.x / width
         guard !value.isNaN && value.isFinite else { return 0.0 }
-        let maxValue = CGFloat(numberOfSections(in: collectionView) - 1)
+        let maxValue = CGFloat(tabs.count - 1)
         let minValue = 0.0
         guard maxValue > 0 else { return 0.0 }
         let range = minValue...maxValue
@@ -134,30 +123,33 @@ open class PageViewController: WorkaroundCollectionViewController {
     
     func update(_ percentComplete: Double) {
         pageTabBar.setIndicator(percentComplete)
-        setPreferredContentScrollView(percentComplete)
     }
     
-    func setPreferredContentScrollView(_ percentComplete: Double) {
-        let index = Int(percentComplete.rounded())
-        let indexPath = IndexPath(item: 0, section: index)
-        let viewController = hostedViewControllers[indexPath]
-        let contentScrollView = viewController?.contentScrollView(for: .top)
-        let scrollView = contentScrollView ?? (viewController?.view as? UIScrollView)
-        setContentScrollView(scrollView, for: [.top, .bottom])
-    }
-    
-    public func reloadData() {
+    @MainActor
+    public func reloadData() async {
         guard isViewLoaded else { return }
-        hostedViewControllers.values.forEach({ detachHostedViewController($0) })
-        hostedViewControllers.removeAll()
-        CATransaction.begin()
-        CATransaction.setCompletionBlock { [unowned self] in
-            update(percentComplete)
-            pageTabBar.indicatorView.isHidden = numberOfSections(in: collectionView) == 0
+        
+        var snapshot = NSDiffableDataSourceSnapshot<Int, PageTab>()
+        for (offset, tab) in tabs.enumerated() {
+            snapshot.appendSections([offset])
+            snapshot.appendItems([tab], toSection: offset)
         }
-        pageTabBar.reloadData()
-        collectionView.reloadData()
-        CATransaction.commit()
+        
+        await dataSource.apply(snapshot, animatingDifferences: false)
+        
+        var tabBarSnapshot = NSDiffableDataSourceSnapshot<Int, PageTab>()
+        tabBarSnapshot.appendSections([0])
+        tabBarSnapshot.appendItems(tabs, toSection: 0)
+        await pageTabBar.tabBarDataSource.apply(tabBarSnapshot, animatingDifferences: false)
+        
+        pageTabBar.indicatorView.isHidden = tabs.count == 0
+        
+        view.setNeedsLayout()
+    }
+    
+    open override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        update(percentComplete)
     }
 }
 
@@ -170,18 +162,5 @@ extension PageViewController: PageTabBarDelegate {
         )
         // 既に選択済みのアイテムを選択するとスクロールが発生しないので１度呼ぶ
         pageTabBar.setIndicator(percentComplete)
-    }
-}
-
-private extension PageViewController {
-    func removeHostedViewController(at indexPath: IndexPath) {
-        guard let viewController = hostedViewControllers.removeValue(forKey: indexPath) else { return }
-        detachHostedViewController(viewController)
-    }
-    
-    func detachHostedViewController(_ viewController: UIViewController) {
-        viewController.willMove(toParent: nil)
-        viewController.view.removeFromSuperview()
-        viewController.removeFromParent()
     }
 }

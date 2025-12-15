@@ -7,7 +7,7 @@ final class TableViewController: UITableViewController {
         cellProvider: { [unowned self] (tableView, indexPath, item) in
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
             cell.contentConfiguration = UIHostingConfiguration(content: {
-                Text("ok")
+                Text("\(indexPath.section):\(indexPath.row)")
             })
             return cell
         }

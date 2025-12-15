@@ -1,11 +1,9 @@
 import UIKit
 import Pager
 
-final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSource, Pager.PageViewControllerDataSource {
+final class PageViewController: Pager.PageViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        dataSource = self
-        pageTabBar.tabBarDataSource = self
         
         navigationItem.title = "Pager Example"
         
@@ -28,10 +26,9 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),
             primaryAction: UIAction { [unowned self] _ in
-                if !items.isEmpty {
-                    items.removeLast()
+                if !tabs.isEmpty {
+                    tabs.removeLast()
                 }
-                self.reloadData()
             }
         )
         let incrementButton = UIBarButtonItem(
@@ -44,8 +41,16 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
                     "Buisiness & Finance",
                     "Entertainment, Fun, Games & More",
                 ]
-                items.append(phrases.randomElement()!)
-                self.reloadData()
+                let phrase = phrases.randomElement()!
+                let tab = PageTab(
+                    id: UUID().uuidString,
+                    title: phrase,
+                    viewControllerProvider: { tab in
+                        //ChildViewController(text: tab.title)
+                        TableViewController(style: .plain)
+                    }
+                )
+                tabs.append(tab)
             }
         )
         
@@ -53,36 +58,5 @@ final class PageViewController: Pager.PageViewController, Pager.PageTabBarDataSo
             incrementButton,
             decrementButton,
         ]
-        
-        reloadData()
-    }
-    
-    var items: [String] = []
-    
-    func numberOfItems(in bar: PageTabBar) -> Int {
-        items.count
-    }
-    
-    func pageTabBar(_ bar: PageTabBar, controlForItemAt index: Int) -> any PageTabBarItem {
-        DefaultPageTabBarItem(title: items[index])
-    }
-    
-    func numberOfViewControllers(
-        in pageViewController: Pager.PageViewController
-    ) -> Int {
-        items.count
-    }
-    
-    func viewController(
-        for pageViewController: Pager.PageViewController,
-        at index: Int
-    ) -> UIViewController? {
-        if items.indices.contains(index) {
-            //ChildViewController(text: items[index])
-            //TableViewController(style: .plain)
-            CollectionViewController(style: .plain)
-        } else {
-            nil
-        }
     }
 }
