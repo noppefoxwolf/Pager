@@ -123,22 +123,6 @@ open class PageViewController: WorkaroundCollectionViewController {
     
     func update(_ percentComplete: Double) {
         pageTabBar.setIndicator(percentComplete)
-        setPreferredContentScrollView(percentComplete)
-    }
-    
-    func setPreferredContentScrollView(_ percentComplete: Double) {
-        let index = Int(percentComplete.rounded())
-        let indexPath = IndexPath(item: 0, section: index)
-        let viewController = viewControllerForItem(at: indexPath)
-        let contentScrollView = viewController?.contentScrollView(for: .top)
-        let scrollView = contentScrollView ?? (viewController?.view as? UIScrollView)
-        setContentScrollView(scrollView, for: [.top, .bottom])
-    }
-    
-    private func viewControllerForItem(at indexPath: IndexPath) -> UIViewController? {
-        let cell = collectionView.visibleCells.first
-        let configuration = cell?.contentConfiguration as? ViewControllerContentConfiguration
-        return configuration?.viewController
     }
     
     public func reloadData() async {
