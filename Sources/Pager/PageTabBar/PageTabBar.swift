@@ -6,7 +6,16 @@ import os
 public final class PageTabBar: UICollectionView {
     let indicatorView = PageTabBarIndicatorView()
     weak var tabBarDelegate: (any PageTabBarDelegate)? = nil
-    public weak var tabBarDataSource: (any PageTabBarDataSource)? = nil
+    lazy var tabBarDataSource = UICollectionViewDiffableDataSource<Int, PageTab>(
+        collectionView: self,
+        cellProvider: { [unowned self] _, indexPath, item in
+            dequeueConfiguredReusableCell(
+                using: cellRegistration,
+                for: indexPath,
+                item: item
+            )
+        }
+    )
     let feedbackGenerator = FeedbackGenerator()
     
     let logger = Logger(
@@ -18,7 +27,6 @@ public final class PageTabBar: UICollectionView {
         super.init(frame: .null, collectionViewLayout: .distributional())
         backgroundColor = .clear
         delegate = self
-        dataSource = self
         showsHorizontalScrollIndicator = false
         showsVerticalScrollIndicator = false
         contentInsetAdjustmentBehavior = .never
@@ -33,7 +41,7 @@ public final class PageTabBar: UICollectionView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    let cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, PageTabBarItem>(
+    let cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, PageTab>(
         handler: { cell, indexPath, item in
             var contentConfiguration = cell.labelConfiguration()
             contentConfiguration.text = item.title
@@ -100,27 +108,27 @@ public final class PageTabBar: UICollectionView {
     }
 }
 
-extension PageTabBar: UICollectionViewDataSource {
-    public func collectionView(
-        _ collectionView: UICollectionView,
-        numberOfItemsInSection section: Int
-    ) -> Int {
-        tabBarDataSource?.numberOfItems(in: self) ?? 0
-    }
-    
-    public func collectionView(
-        _ collectionView: UICollectionView,
-        cellForItemAt indexPath: IndexPath
-    ) -> UICollectionViewCell {
-        let item = tabBarDataSource?.pageTabBar(self, controlForItemAt: indexPath.row)
-        guard let item else { fatalError() }
-        return collectionView.dequeueConfiguredReusableCell(
-            using: cellRegistration,
-            for: indexPath,
-            item: item
-        )
-    }
-}
+//extension PageTabBar: UICollectionViewDataSource {
+//    public func collectionView(
+//        _ collectionView: UICollectionView,
+//        numberOfItemsInSection section: Int
+//    ) -> Int {
+//        tabBarDataSource?.numberOfItems(in: self) ?? 0
+//    }
+//    
+//    public func collectionView(
+//        _ collectionView: UICollectionView,
+//        cellForItemAt indexPath: IndexPath
+//    ) -> UICollectionViewCell {
+//        let item = tabBarDataSource?.pageTabBar(self, controlForItemAt: indexPath.row)
+//        guard let item else { fatalError() }
+//        return collectionView.dequeueConfiguredReusableCell(
+//            using: cellRegistration,
+//            for: indexPath,
+//            item: item
+//        )
+//    }
+//}
 
 extension PageTabBar: UICollectionViewDelegate {
     public func collectionView(
