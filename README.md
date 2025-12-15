@@ -5,10 +5,11 @@ UIKit pager view controller with a scroll-synced tab bar and indicator, built on
 ![](.github/sample.gif)
 
 ## Features
-- Host any `UIViewController` per page via `PageTab` providers; works inside navigation or tab bar stacks.
-- Scroll-synced tab bar whose indicator width follows the current label; optional haptics on selection.
-- Safe rotation and resizing: keeps the current page and indicator aligned on size changes.
-- Customizable content insets per page (`itemContentInsets`) for floating headers or safe-area spacing.
+- Host any `UIViewController` per page via `Page` providers; works inside navigation or tab stacks.
+- Scroll-synced tab bar whose indicator width follows the current label; optional selection haptics.
+- Programmatic or observed selection through `selectedPage` with safe pre-load application.
+- Safe rotation/resizing: keeps the current page and indicator aligned on size changes.
+- Customizable content insets per page (`itemContentInsets`) for floating headers / safe areas.
 - Targets iOS 17+ and visionOS 1+ (Swift tools 6.2).
 
 ## Installation (Swift Package Manager)
@@ -32,13 +33,16 @@ final class PagesViewController: PageViewController {
         super.viewDidLoad()
 
         pages = [
-            PageTab(id: "home", title: "Home") { tab in
-                UIHostingController(rootView: Text(tab.title))
+            Page(id: "home", title: "Home") { page in
+                UIHostingController(rootView: Text(page.title))
             },
-            PageTab(id: "list", title: "List") { _ in
+            Page(id: "list", title: "List") { _ in
                 TableViewController(style: .plain)   // any UIViewController works
             }
         ]
+
+        // Programmatically select a page (can be set before view loads)
+        selectedPage = pages.first
 
         // Place the tab bar beneath the navigation bar
         let interaction = UIScrollEdgeElementContainerInteraction()
@@ -61,11 +65,11 @@ final class PagesViewController: PageViewController {
 }
 ```
 
-`pages` can be updated at runtime (append/remove) and the pager refreshes automatically through diffable data sources.
+`pages` can be updated at runtime (append/remove) and the pager refreshes automatically through diffable data sources; `selectedPage` tracks the visible page and can be set to jump.
 
 ## Key types
-- `PageViewController`: horizontally paged collection view controller that exposes `pages`, `pageTabBar`, `itemContentInsets`, and `reloadData()`.
-- `PageTab`: page descriptor containing `id`, `title`, and a `viewControllerProvider`.
+- `PageViewController`: horizontally paged collection view controller exposing `pages`, `selectedPage`, `pageTabBar`, `itemContentInsets`, and `reloadData()`.
+- `Page`: page descriptor containing `id`, `title`, and a `viewControllerProvider`.
 - `PageTabBar`: horizontally scrolling tab bar with an indicator that tracks scroll progress and emits selection haptics.
 
 ## Examples
