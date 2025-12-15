@@ -39,14 +39,15 @@ final class ViewControllerContentView: UIView, UIContentView {
         if let configuration = configuration as? ViewControllerContentConfiguration {
             configuration.viewController.willMove(toParent: nil)
             configuration.viewController.view.removeFromSuperview()
-            configuration.viewController.didMove(toParent: nil)
             configuration.viewController.removeFromParent()
         }
         
         if let configuration = newConfiguration as? ViewControllerContentConfiguration {
             let contentView = configuration.viewController.view!
             contentView.translatesAutoresizingMaskIntoConstraints = false
-            configuration.viewController.willMove(toParent: configuration.parent)
+            
+            configuration.parent?.addChild(configuration.viewController)
+            
             addSubview(configuration.viewController.view)
             NSLayoutConstraint.activate(
                 [
@@ -63,7 +64,6 @@ final class ViewControllerContentView: UIView, UIContentView {
                 ]
             )
             configuration.viewController.didMove(toParent: configuration.parent)
-            configuration.parent?.addChild(configuration.viewController)
         }
     }
 }
