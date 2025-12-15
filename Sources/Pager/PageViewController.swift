@@ -142,6 +142,8 @@ open class PageViewController: WorkaroundCollectionViewController {
         tabBarSnapshot.appendItems(tabs, toSection: 0)
         await pageTabBar.tabBarDataSource.apply(tabBarSnapshot, animatingDifferences: false)
         
+        collectionView.layoutIfNeeded()
+        pageTabBar.layoutIfNeeded()
         update(percentComplete)
         pageTabBar.indicatorView.isHidden = tabs.count == 0
     }
