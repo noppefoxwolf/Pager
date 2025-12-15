@@ -3,7 +3,10 @@ import UIKit
 final class ViewControllerContentView: UIView, UIContentView {
     var configuration: UIContentConfiguration {
         didSet {
-            configure(configuration: configuration)
+            onConfigurationChanged(
+                oldValue: oldValue,
+                newValue: configuration
+            )
         }
     }
     
@@ -28,36 +31,40 @@ final class ViewControllerContentView: UIView, UIContentView {
             ownConfiguration.viewController.willMove(toParent: nil)
         }
     }
-    
-    override func didMoveToSuperview() {
-        super.didMoveToSuperview()
-        if superview != nil {
-            ownConfiguration.viewController.didMove(toParent: ownConfiguration.parent)
-            ownConfiguration.parent?.addChild(ownConfiguration.viewController)
-        } else {
-            ownConfiguration.viewController.didMove(toParent: nil)
-            ownConfiguration.viewController.removeFromParent()
-        }
-    }
 
-    func configure(configuration: UIContentConfiguration) {
-        guard let configuration = configuration as? ViewControllerContentConfiguration else { return }
-        configuration.viewController.view.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(configuration.viewController.view)
-        NSLayoutConstraint.activate(
-            [
-                configuration.viewController.view.topAnchor.constraint(
-                    equalTo: safeAreaLayoutGuide.topAnchor
-                ),
-                safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: configuration.viewController.view.bottomAnchor),
-                configuration.viewController.view.leadingAnchor.constraint(
-                    equalTo: safeAreaLayoutGuide.leadingAnchor
-                ),
-                safeAreaLayoutGuide.trailingAnchor.constraint(
-                    equalTo: configuration.viewController.view.trailingAnchor
-                ),
-            ]
-        )
+    func onConfigurationChanged(
+        oldValue configuration: UIContentConfiguration,
+        newValue newConfiguration: UIContentConfiguration
+    ) {
+        if let configuration = configuration as? ViewControllerContentConfiguration {
+            configuration.viewController.willMove(toParent: nil)
+            configuration.viewController.view.removeFromSuperview()
+            configuration.viewController.didMove(toParent: nil)
+            configuration.viewController.removeFromParent()
+        }
+        
+        if let configuration = newConfiguration as? ViewControllerContentConfiguration {
+            let contentView = configuration.viewController.view!
+            contentView.translatesAutoresizingMaskIntoConstraints = false
+            configuration.viewController.willMove(toParent: configuration.parent)
+            addSubview(configuration.viewController.view)
+            NSLayoutConstraint.activate(
+                [
+                    contentView.topAnchor.constraint(
+                        equalTo: safeAreaLayoutGuide.topAnchor
+                    ),
+                    safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+                    contentView.leadingAnchor.constraint(
+                        equalTo: safeAreaLayoutGuide.leadingAnchor
+                    ),
+                    safeAreaLayoutGuide.trailingAnchor.constraint(
+                        equalTo: contentView.trailingAnchor
+                    ),
+                ]
+            )
+            configuration.viewController.didMove(toParent: configuration.parent)
+            configuration.parent?.addChild(configuration.viewController)
+        }
     }
 }
 
