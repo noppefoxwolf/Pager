@@ -20,12 +20,23 @@ final class ViewControllerContentView: UIView, UIContentView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func willMove(toSuperview newSuperview: UIView?) {
+        super.willMove(toSuperview: newSuperview)
+        if newSuperview != nil {
+            ownConfiguration.viewController.willMove(toParent: ownConfiguration.parent)
+        } else {
+            ownConfiguration.viewController.willMove(toParent: nil)
+        }
+    }
+    
     override func didMoveToSuperview() {
         super.didMoveToSuperview()
-        if let superview {
+        if superview != nil {
             ownConfiguration.viewController.didMove(toParent: ownConfiguration.parent)
+            ownConfiguration.parent?.addChild(ownConfiguration.viewController)
         } else {
             ownConfiguration.viewController.didMove(toParent: nil)
+            ownConfiguration.viewController.removeFromParent()
         }
     }
 

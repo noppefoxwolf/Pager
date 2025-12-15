@@ -143,6 +143,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     
     public func reloadData() async {
         guard isViewLoaded else { return }
+        
         var snapshot = NSDiffableDataSourceSnapshot<Int, PageTab>()
         for (offset, tab) in tabs.enumerated() {
             snapshot.appendSections([offset])

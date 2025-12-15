@@ -4,7 +4,7 @@ extension UICollectionViewLayout {
     static func paging() -> UICollectionViewCompositionalLayout {
         let configuration = UICollectionViewCompositionalLayoutConfiguration()
         configuration.scrollDirection = .horizontal
-        configuration.contentInsetsReference = .automatic
+        configuration.contentInsetsReference = .none
         return UICollectionViewCompositionalLayout(
             sectionProvider: { section, environment in
                 let itemSize = NSCollectionLayoutSize(
