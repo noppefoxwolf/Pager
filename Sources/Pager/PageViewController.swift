@@ -125,6 +125,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         pageTabBar.setIndicator(percentComplete)
     }
     
+    @MainActor
     public func reloadData() async {
         guard isViewLoaded else { return }
         
