@@ -46,7 +46,8 @@ final class PageViewController: Pager.PageViewController {
                     id: UUID().uuidString,
                     title: phrase,
                     viewControllerProvider: { tab in
-                        ChildViewController(text: tab.title)
+                        //ChildViewController(text: tab.title)
+                        TableViewController(style: .plain)
                     }
                 )
                 tabs.append(tab)

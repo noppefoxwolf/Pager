@@ -136,8 +136,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
     
     private func viewControllerForItem(at indexPath: IndexPath) -> UIViewController? {
-        // FIXME: このcellは表示中のやつ？
-        let cell = collectionView.cellForItem(at: indexPath)
+        let cell = collectionView.visibleCells.first
         let configuration = cell?.contentConfiguration as? ViewControllerContentConfiguration
         return configuration?.viewController
     }
