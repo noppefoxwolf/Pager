@@ -151,6 +151,12 @@ open class PageViewController: WorkaroundCollectionViewController {
         super.viewDidLayoutSubviews()
         update(percentComplete)
     }
+    
+    open override func contentScrollView(for edge: NSDirectionalRectEdge) -> UIScrollView? {
+        guard isViewLoaded else { return nil }
+        let contentConfiguration = collectionView.visibleCells.first?.contentConfiguration as? ViewControllerContentConfiguration
+        return contentConfiguration?.viewController.contentScrollView(for: edge)
+    }
 }
 
 extension PageViewController: PageTabBarDelegate {
