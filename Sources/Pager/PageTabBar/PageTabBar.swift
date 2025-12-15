@@ -108,28 +108,6 @@ public final class PageTabBar: UICollectionView {
     }
 }
 
-//extension PageTabBar: UICollectionViewDataSource {
-//    public func collectionView(
-//        _ collectionView: UICollectionView,
-//        numberOfItemsInSection section: Int
-//    ) -> Int {
-//        tabBarDataSource?.numberOfItems(in: self) ?? 0
-//    }
-//    
-//    public func collectionView(
-//        _ collectionView: UICollectionView,
-//        cellForItemAt indexPath: IndexPath
-//    ) -> UICollectionViewCell {
-//        let item = tabBarDataSource?.pageTabBar(self, controlForItemAt: indexPath.row)
-//        guard let item else { fatalError() }
-//        return collectionView.dequeueConfiguredReusableCell(
-//            using: cellRegistration,
-//            for: indexPath,
-//            item: item
-//        )
-//    }
-//}
-
 extension PageTabBar: UICollectionViewDelegate {
     public func collectionView(
         _ collectionView: UICollectionView,
