@@ -14,7 +14,6 @@ final class PageItemViewController: UIViewController {
     
     override func loadView() {
         super.loadView()
-        viewController.willMove(toParent: self)
         addChild(viewController)
         view.addSubview(viewController.view)
         viewController.didMove(toParent: self)

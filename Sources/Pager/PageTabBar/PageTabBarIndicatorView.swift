@@ -4,6 +4,9 @@ final class PageTabBarIndicatorView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .tintColor
+        if #available(iOS 26.0, *) {
+            cornerConfiguration = .capsule()
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -12,6 +15,9 @@ final class PageTabBarIndicatorView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        layer.cornerRadius = bounds.height / 2
+        
+        if #unavailable(iOS 26.0) {
+            layer.cornerRadius = bounds.height / 2
+        }
     }
 }

@@ -26,8 +26,8 @@ final class PageViewController: Pager.PageViewController {
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),
             primaryAction: UIAction { [unowned self] _ in
-                if !tabs.isEmpty {
-                    tabs.removeLast()
+                if !pages.isEmpty {
+                    pages.removeLast()
                 }
             }
         )
@@ -42,7 +42,7 @@ final class PageViewController: Pager.PageViewController {
                     "Entertainment, Fun, Games & More",
                 ]
                 let phrase = phrases.randomElement()!
-                let tab = PageTab(
+                let tab = Page(
                     id: UUID().uuidString,
                     title: phrase,
                     viewControllerProvider: { tab in
@@ -50,7 +50,7 @@ final class PageViewController: Pager.PageViewController {
                         TableViewController(style: .plain)
                     }
                 )
-                tabs.append(tab)
+                pages.append(tab)
             }
         )
         

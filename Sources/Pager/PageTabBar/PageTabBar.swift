@@ -6,7 +6,7 @@ import os
 public final class PageTabBar: UICollectionView {
     let indicatorView = PageTabBarIndicatorView()
     weak var tabBarDelegate: (any PageTabBarDelegate)? = nil
-    lazy var tabBarDataSource = UICollectionViewDiffableDataSource<Int, PageTab>(
+    lazy var tabBarDataSource = UICollectionViewDiffableDataSource<Int, Page>(
         collectionView: self,
         cellProvider: { [unowned self] _, indexPath, item in
             dequeueConfiguredReusableCell(
@@ -41,7 +41,7 @@ public final class PageTabBar: UICollectionView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    let cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, PageTab>(
+    let cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, Page>(
         handler: { cell, _, item in
             var contentConfiguration = cell.labelConfiguration()
             contentConfiguration.text = item.title

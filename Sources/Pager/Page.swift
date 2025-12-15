@@ -1,14 +1,14 @@
 import UIKit
 
-public struct PageTab: Identifiable, Sendable {
+public struct Page: Identifiable, Sendable {
     public let id: String
     public let title: String
-    public let viewControllerProvider: @MainActor @Sendable (PageTab) -> UIViewController
+    public let viewControllerProvider: @MainActor @Sendable (Page) -> UIViewController
     
     public init(
         id: String,
         title: String,
-        viewControllerProvider: @MainActor @Sendable @escaping (PageTab) -> UIViewController
+        viewControllerProvider: @MainActor @Sendable @escaping (Page) -> UIViewController
     ) {
         self.id = id
         self.title = title
@@ -16,8 +16,8 @@ public struct PageTab: Identifiable, Sendable {
     }
 }
 
-extension PageTab: Equatable, Hashable {
-    public static func == (lhs: PageTab, rhs: PageTab) -> Bool {
+extension Page: Equatable, Hashable {
+    public static func == (lhs: Page, rhs: Page) -> Bool {
         lhs.id == rhs.id && lhs.title == rhs.title
     }
     

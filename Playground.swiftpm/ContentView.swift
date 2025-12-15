@@ -10,7 +10,7 @@ struct ContentView: UIViewControllerRepresentable {
                         image: UIImage(systemName: "house"),
                         identifier: "home",
                         viewControllerProvider: { _ in
-                            UINavigationController(rootViewController: PageViewController(tabs: []))
+                            UINavigationController(rootViewController: PageViewController(pages: []))
                         }
                     ),
                     UITab(
@@ -31,7 +31,7 @@ struct ContentView: UIViewControllerRepresentable {
             return vc
         } else {
             return UINavigationController(
-                rootViewController: PageViewController(tabs: [])
+                rootViewController: PageViewController(pages: [])
             )
         }
     }

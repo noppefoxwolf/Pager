@@ -31,7 +31,7 @@ final class PagesViewController: PageViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        tabs = [
+        pages = [
             PageTab(id: "home", title: "Home") { tab in
                 UIHostingController(rootView: Text(tab.title))
             },
@@ -61,10 +61,10 @@ final class PagesViewController: PageViewController {
 }
 ```
 
-`tabs` can be updated at runtime (append/remove) and the pager refreshes automatically through diffable data sources.
+`pages` can be updated at runtime (append/remove) and the pager refreshes automatically through diffable data sources.
 
 ## Key types
-- `PageViewController`: horizontally paged collection view controller that exposes `tabs`, `pageTabBar`, `itemContentInsets`, and `reloadData()`.
+- `PageViewController`: horizontally paged collection view controller that exposes `pages`, `pageTabBar`, `itemContentInsets`, and `reloadData()`.
 - `PageTab`: page descriptor containing `id`, `title`, and a `viewControllerProvider`.
 - `PageTabBar`: horizontally scrolling tab bar with an indicator that tracks scroll progress and emits selection haptics.
 

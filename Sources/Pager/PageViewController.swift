@@ -5,7 +5,7 @@ import ViewControllerContentConfiguration
 open class PageViewController: WorkaroundCollectionViewController {
     public let pageTabBar = PageTabBar()
     
-    lazy var dataSource = UICollectionViewDiffableDataSource<Int, PageTab>(
+    lazy var dataSource = UICollectionViewDiffableDataSource<Int, Page>(
         collectionView: collectionView,
         cellProvider: { [unowned self] collectionView, indexPath, item in
             collectionView.dequeueConfiguredReusableCell(
@@ -29,7 +29,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         category: #file
     )
     
-    public var tabs: [PageTab] = [] {
+    public var pages: [Page] = [] {
         didSet {
             Task {
                 await reloadData()
@@ -37,8 +37,8 @@ open class PageViewController: WorkaroundCollectionViewController {
         }
     }
     
-    public init(tabs: [PageTab]) {
-        self.tabs = tabs
+    public init(pages: [Page] = []) {
+        self.pages = pages
         super.init(collectionViewLayout: .paging())
     }
     
@@ -67,7 +67,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         update(percentComplete)
     }
     
-    lazy var cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, PageTab>(
+    lazy var cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, Page>(
         handler: { [unowned self] cell, indexPath, item in
             let contentViewController = item.viewControllerProvider(item)
             let viewController = PageItemViewController(viewController: contentViewController)
@@ -107,7 +107,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         guard width > 0 else { return 0.0 }
         let value = collectionView.contentOffset.x / width
         guard !value.isNaN && value.isFinite else { return 0.0 }
-        let maxValue = CGFloat(tabs.count - 1)
+        let maxValue = CGFloat(pages.count - 1)
         let minValue = 0.0
         guard maxValue > 0 else { return 0.0 }
         let range = minValue...maxValue
@@ -129,20 +129,20 @@ open class PageViewController: WorkaroundCollectionViewController {
     public func reloadData() async {
         guard isViewLoaded else { return }
         
-        var snapshot = NSDiffableDataSourceSnapshot<Int, PageTab>()
-        for (offset, tab) in tabs.enumerated() {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, Page>()
+        for (offset, tab) in pages.enumerated() {
             snapshot.appendSections([offset])
             snapshot.appendItems([tab], toSection: offset)
         }
         
         await dataSource.apply(snapshot, animatingDifferences: false)
         
-        var tabBarSnapshot = NSDiffableDataSourceSnapshot<Int, PageTab>()
+        var tabBarSnapshot = NSDiffableDataSourceSnapshot<Int, Page>()
         tabBarSnapshot.appendSections([0])
-        tabBarSnapshot.appendItems(tabs, toSection: 0)
+        tabBarSnapshot.appendItems(pages, toSection: 0)
         await pageTabBar.tabBarDataSource.apply(tabBarSnapshot, animatingDifferences: false)
         
-        pageTabBar.indicatorView.isHidden = tabs.count == 0
+        pageTabBar.indicatorView.isHidden = pages.count == 0
         
         view.setNeedsLayout()
     }
