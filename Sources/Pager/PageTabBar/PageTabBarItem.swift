@@ -24,6 +24,5 @@ extension PageTab: Equatable, Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
         hasher.combine(title)
-        hasher.finalize()
     }
 }
