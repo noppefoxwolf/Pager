@@ -1,31 +1,15 @@
 import UIKit
 
 final class ViewControllerContentView: UIView, UIContentView {
-    struct Configuration: UIContentConfiguration {
-        weak var parent: UIViewController? = nil
-        var viewController: UIViewController
-        
-        init(viewController: UIViewController, parent: UIViewController?) {
-            self.parent = parent
-            self.viewController = viewController
-        }
-
-        func makeContentView() -> UIView & UIContentView {
-            ViewControllerContentView(self)
-        }
-
-        func updated(for state: UIConfigurationState) -> ViewControllerContentView.Configuration {
-            self
-        }
-    }
-    
     var configuration: UIContentConfiguration {
         didSet {
             configure(configuration: configuration)
         }
     }
     
-    var ownConfiguration: Configuration { configuration as! Configuration }
+    var ownConfiguration: ViewControllerContentConfiguration {
+        configuration as! ViewControllerContentConfiguration
+    }
 
     init(_ configuration: UIContentConfiguration) {
         self.configuration = configuration
@@ -46,7 +30,7 @@ final class ViewControllerContentView: UIView, UIContentView {
     }
 
     func configure(configuration: UIContentConfiguration) {
-        guard let configuration = configuration as? Configuration else { return }
+        guard let configuration = configuration as? ViewControllerContentConfiguration else { return }
         configuration.viewController.view.translatesAutoresizingMaskIntoConstraints = false
         addSubview(configuration.viewController.view)
         NSLayoutConstraint.activate(
@@ -66,11 +50,3 @@ final class ViewControllerContentView: UIView, UIContentView {
     }
 }
 
-extension UICollectionViewCell {
-    func viewControllerConfiguration(
-        viewController: UIViewController,
-        parent: UIViewController?
-    ) -> ViewControllerContentView.Configuration {
-        ViewControllerContentView.Configuration(viewController: viewController, parent: parent)
-    }
-}

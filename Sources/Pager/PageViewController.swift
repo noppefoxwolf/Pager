@@ -1,5 +1,6 @@
 import UIKit
 import os
+import ViewControllerContentConfiguration
 
 open class PageViewController: WorkaroundCollectionViewController {
     public let pageTabBar = PageTabBar()
@@ -128,12 +129,17 @@ open class PageViewController: WorkaroundCollectionViewController {
     func setPreferredContentScrollView(_ percentComplete: Double) {
         let index = Int(percentComplete.rounded())
         let indexPath = IndexPath(item: 0, section: index)
-        let cell = collectionView.cellForItem(at: indexPath)
-        guard let configuration = cell?.contentConfiguration as? ViewControllerContentView.Configuration else { return }
-        let viewController = configuration.viewController
-        let contentScrollView = viewController.contentScrollView(for: .top)
-        let scrollView = contentScrollView ?? (viewController.view as? UIScrollView)
+        let viewController = viewControllerForItem(at: indexPath)
+        let contentScrollView = viewController?.contentScrollView(for: .top)
+        let scrollView = contentScrollView ?? (viewController?.view as? UIScrollView)
         setContentScrollView(scrollView, for: [.top, .bottom])
+    }
+    
+    private func viewControllerForItem(at indexPath: IndexPath) -> UIViewController? {
+        // FIXME: このcellは表示中のやつ？
+        let cell = collectionView.cellForItem(at: indexPath)
+        let configuration = cell?.contentConfiguration as? ViewControllerContentConfiguration
+        return configuration?.viewController
     }
     
     public func reloadData() async {
