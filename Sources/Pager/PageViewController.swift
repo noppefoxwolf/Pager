@@ -15,6 +15,7 @@ open class PageViewController: WorkaroundCollectionViewController {
             )
         }
     )
+    public weak var delegate: (any PageViewControllerDelegate)? = nil
     
     public var itemContentInsets: UIEdgeInsets = .zero {
         didSet {
