@@ -5,7 +5,7 @@ import ViewControllerContentConfiguration
 open class PageViewController: WorkaroundCollectionViewController {
     public let pageTabBar = PageTabBar()
     
-    lazy var dataSource = UICollectionViewDiffableDataSource<Int, Page.ID>(
+    lazy var dataSource = UICollectionViewDiffableDataSource<Section, Page.ID>(
         collectionView: collectionView,
         cellProvider: { [unowned self] collectionView, indexPath, item in
             collectionView.dequeueConfiguredReusableCell(
@@ -121,16 +121,12 @@ open class PageViewController: WorkaroundCollectionViewController {
         
         pagesByID = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, $0) })
         
-        var snapshot = NSDiffableDataSourceSnapshot<Int, Page.ID>()
-        snapshot.appendSections([0])
-        snapshot.appendItems(pages.map(\.id), toSection: 0)
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Page.ID>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(pages.map(\.id), toSection: .main)
         
         await dataSource.apply(snapshot, animatingDifferences: false)
-        
-        var tabBarSnapshot = NSDiffableDataSourceSnapshot<Int, Page.ID>()
-        tabBarSnapshot.appendSections([0])
-        tabBarSnapshot.appendItems(pages.map(\.id), toSection: 0)
-        await pageTabBar.tabBarDataSource.apply(tabBarSnapshot, animatingDifferences: false)
+        await pageTabBar.tabBarDataSource.apply(snapshot, animatingDifferences: false)
         
         pageTabBar.indicatorView.isHidden = pages.count == 0
         

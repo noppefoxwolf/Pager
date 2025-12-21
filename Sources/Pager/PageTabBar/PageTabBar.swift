@@ -6,7 +6,7 @@ import os
 public final class PageTabBar: UICollectionView {
     let indicatorView = PageTabBarIndicatorView()
     weak var tabBarDelegate: (any PageTabBarDelegate)? = nil
-    lazy var tabBarDataSource = UICollectionViewDiffableDataSource<Int, Page.ID>(
+    lazy var tabBarDataSource = UICollectionViewDiffableDataSource<Section, Page.ID>(
         collectionView: self,
         cellProvider: { [unowned self] collectionView, indexPath, item in
             collectionView.dequeueConfiguredReusableCell(
