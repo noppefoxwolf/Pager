@@ -13,7 +13,9 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
         super.viewDidLoad()
         
         delegate = self
-        navigationItem.title = "Pager Example"
+        if navigationItem.title == nil {
+            navigationItem.title = "Pager Example"
+        }
         
         let interaction = UIScrollEdgeElementContainerInteraction()
         interaction.scrollView = collectionView
@@ -68,6 +70,10 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             incrementButton,
             decrementButton,
         ]
+        
+        Task {
+            await reloadData()
+        }
     }
     
     func willTransition(to pendingViewControllers: [UIViewController]) {
@@ -76,5 +82,33 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
     
     func didFinishTransition(_ pageViewController: Pager.PageViewController) {
         logger.debug("didFinishTransition")
+    }
+}
+
+extension PageViewController {
+    static func seededPages() -> [Page] {
+        [
+            Page(
+                id: "home",
+                title: "Home",
+                viewControllerProvider: { page in
+                    ChildViewController(text: page.title)
+                }
+            ),
+            Page(
+                id: "table",
+                title: "Table",
+                viewControllerProvider: { _ in
+                    TableViewController(style: .plain)
+                }
+            ),
+            Page(
+                id: "collection",
+                title: "Collection",
+                viewControllerProvider: { _ in
+                    CollectionViewController(style: .insetGrouped)
+                }
+            ),
+        ]
     }
 }

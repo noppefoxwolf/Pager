@@ -2,25 +2,32 @@ import SwiftUI
 
 struct ContentView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> some UIViewController {
+        let emptyPager = PageViewController(pages: [])
+        emptyPager.title = "Empty Pages"
+        
+        let seededPager = PageViewController(pages: PageViewController.seededPages())
+        seededPager.title = "Seeded Pages"
+        
+        let emptyNav = UINavigationController(rootViewController: emptyPager)
+        let seededNav = UINavigationController(rootViewController: seededPager)
+        
         if #available(iOS 18.0, *) {
             let vc = UITabBarController(
                 tabs: [
                     UITab(
-                        title: "Home",
-                        image: UIImage(systemName: "house"),
-                        identifier: "home",
+                        title: "Empty",
+                        image: UIImage(systemName: "square.dashed"),
+                        identifier: "empty",
                         viewControllerProvider: { _ in
-                            UINavigationController(rootViewController: PageViewController(pages: []))
+                            emptyNav
                         }
                     ),
                     UITab(
-                        title: "Notification",
-                        image: UIImage(systemName: "bell"),
-                        identifier: "notification",
+                        title: "Seeded",
+                        image: UIImage(systemName: "square.stack.3d.up"),
+                        identifier: "seeded",
                         viewControllerProvider: { _ in
-                            UIHostingController(rootView: List(0..<100, rowContent: { _ in
-                                Text("Hello, World!")
-                            }))
+                            seededNav
                         }
                     )
                 ]
@@ -30,9 +37,22 @@ struct ContentView: UIViewControllerRepresentable {
             }
             return vc
         } else {
-            return UINavigationController(
-                rootViewController: PageViewController(pages: [])
+            let tabBarController = UITabBarController()
+            emptyNav.tabBarItem = UITabBarItem(
+                title: "Empty",
+                image: UIImage(systemName: "square.dashed"),
+                tag: 0
             )
+            seededNav.tabBarItem = UITabBarItem(
+                title: "Seeded",
+                image: UIImage(systemName: "square.stack.3d.up"),
+                tag: 1
+            )
+            tabBarController.viewControllers = [
+                emptyNav,
+                seededNav,
+            ]
+            return tabBarController
         }
     }
     
@@ -40,4 +60,3 @@ struct ContentView: UIViewControllerRepresentable {
         
     }
 }
-
