@@ -27,14 +27,3 @@ public final class Page: Identifiable {
         self.viewControllerProvider = viewControllerProvider
     }
 }
-
-extension Page: Equatable, Hashable {
-    public static func == (lhs: Page, rhs: Page) -> Bool {
-        lhs.id == rhs.id && lhs.title == rhs.title
-    }
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(title)
-    }
-}
