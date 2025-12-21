@@ -8,6 +8,7 @@ final class ChildViewController: UIViewController {
     init(text: String) {
         self.text = text
         super.init(nibName: nil, bundle: nil)
+        self.title = text
     }
     
     required init?(coder: NSCoder) {

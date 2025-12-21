@@ -130,12 +130,19 @@ open class PageViewController: WorkaroundCollectionViewController {
         snapshot.appendSections([.main])
         snapshot.appendItems(pages.map(\.id), toSection: .main)
         
+        let diff = dataSource.snapshot().itemIdentifiers.difference(from: snapshot.itemIdentifiers)
+        
         await dataSource.apply(snapshot, animatingDifferences: false)
         await pageTabBar.tabBarDataSource.apply(snapshot, animatingDifferences: false)
         
         pageTabBar.indicatorView.isHidden = pages.count == 0
         
         view.setNeedsLayout()
+        
+        if !diff.isEmpty {
+            delegate?.didFinishTransition(self)
+        }
+        
     }
     
     open override func viewDidLayoutSubviews() {
