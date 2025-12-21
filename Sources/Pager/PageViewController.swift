@@ -144,6 +144,22 @@ open class PageViewController: WorkaroundCollectionViewController {
         guard let indexPath = collectionView.indexPathsForVisibleItems.first else { return nil }
         return pages[indexPath.section].viewController.contentScrollView(for: edge)
     }
+    
+    open override func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        delegate?.didFinishTransition(self)
+    }
+    
+    open override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        delegate?.didFinishTransition(self)
+    }
+    
+    open override func collectionView(
+        _ collectionView: UICollectionView,
+        willDisplay cell: UICollectionViewCell,
+        forItemAt indexPath: IndexPath
+    ) {
+        delegate?.willTransition(to: [pages[indexPath.row].viewController])
+    }
 }
 
 extension PageViewController: PageTabBarDelegate {

@@ -1,10 +1,18 @@
 import UIKit
 import Pager
+import os
 
-final class PageViewController: Pager.PageViewController {
+final class PageViewController: Pager.PageViewController, Pager.PageViewControllerDelegate {
+    
+    let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier!,
+        category: #file
+    )
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        delegate = self
         navigationItem.title = "Pager Example"
         
         let interaction = UIScrollEdgeElementContainerInteraction()
@@ -47,7 +55,9 @@ final class PageViewController: Pager.PageViewController {
                     title: phrase,
                     viewControllerProvider: { tab in
                         //ChildViewController(text: tab.title)
-                        TableViewController(style: .plain)
+                        let vc = TableViewController(style: .plain)
+                        vc.title = phrase
+                        return vc
                     }
                 )
                 pages.append(tab)
@@ -58,5 +68,13 @@ final class PageViewController: Pager.PageViewController {
             incrementButton,
             decrementButton,
         ]
+    }
+    
+    func willTransition(to pendingViewControllers: [UIViewController]) {
+        logger.debug("willTransition: \(pendingViewControllers.compactMap(\.title))")
+    }
+    
+    func didFinishTransition(_ pageViewController: Pager.PageViewController) {
+        logger.debug("didFinishTransition")
     }
 }
