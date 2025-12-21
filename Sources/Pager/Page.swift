@@ -1,6 +1,6 @@
 import UIKit
 
-public struct Page: Identifiable, Sendable {
+public final class Page: Identifiable {
     public let id: String
     public let title: String
     public let viewControllerProvider: @MainActor @Sendable (Page) -> UIViewController
