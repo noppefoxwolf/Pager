@@ -52,13 +52,13 @@ final class ViewControllerContentView: UIView, UIContentView {
             NSLayoutConstraint.activate(
                 [
                     contentView.topAnchor.constraint(
-                        equalTo: safeAreaLayoutGuide.topAnchor
+                        equalTo: topAnchor
                     ),
-                    safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+                    bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
                     contentView.leadingAnchor.constraint(
-                        equalTo: safeAreaLayoutGuide.leadingAnchor
+                        equalTo: leadingAnchor
                     ),
-                    safeAreaLayoutGuide.trailingAnchor.constraint(
+                    trailingAnchor.constraint(
                         equalTo: contentView.trailingAnchor
                     ),
                 ]
