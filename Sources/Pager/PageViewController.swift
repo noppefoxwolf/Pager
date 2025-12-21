@@ -5,7 +5,7 @@ import ViewControllerContentConfiguration
 open class PageViewController: WorkaroundCollectionViewController {
     public let pageTabBar = PageTabBar()
     
-    lazy var dataSource = UICollectionViewDiffableDataSource<Int, Page>(
+    lazy var dataSource = UICollectionViewDiffableDataSource<Int, Page.ID>(
         collectionView: collectionView,
         cellProvider: { [unowned self] collectionView, indexPath, item in
             collectionView.dequeueConfiguredReusableCell(
@@ -31,6 +31,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     
     public var pages: [Page] = [] {
         didSet {
+            pagesByID = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, $0) })
             Task {
                 await reloadData()
             }
@@ -67,9 +68,19 @@ open class PageViewController: WorkaroundCollectionViewController {
         update(percentComplete)
     }
     
-    lazy var cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, Page>(
+    private var pagesByID: [Page.ID: Page] = [:] {
+        didSet {
+            pageTabBar.pagesByID = pagesByID
+        }
+    }
+    
+    lazy var cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, Page.ID>(
         handler: { [unowned self] cell, indexPath, item in
-            let contentViewController = item.viewControllerProvider(item)
+            guard let page = pagesByID[item] else {
+                cell.contentConfiguration = nil
+                return
+            }
+            let contentViewController = page.viewControllerProvider(page)
             let viewController = PageItemViewController(viewController: contentViewController)
             viewController.additionalSafeAreaInsets = itemContentInsets
             cell.contentConfiguration = cell.viewControllerConfiguration(
@@ -129,17 +140,19 @@ open class PageViewController: WorkaroundCollectionViewController {
     public func reloadData() async {
         guard isViewLoaded else { return }
         
-        var snapshot = NSDiffableDataSourceSnapshot<Int, Page>()
+        pagesByID = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, $0) })
+        
+        var snapshot = NSDiffableDataSourceSnapshot<Int, Page.ID>()
         for (offset, tab) in pages.enumerated() {
             snapshot.appendSections([offset])
-            snapshot.appendItems([tab], toSection: offset)
+            snapshot.appendItems([tab.id], toSection: offset)
         }
         
         await dataSource.apply(snapshot, animatingDifferences: false)
         
-        var tabBarSnapshot = NSDiffableDataSourceSnapshot<Int, Page>()
+        var tabBarSnapshot = NSDiffableDataSourceSnapshot<Int, Page.ID>()
         tabBarSnapshot.appendSections([0])
-        tabBarSnapshot.appendItems(pages, toSection: 0)
+        tabBarSnapshot.appendItems(pages.map(\.id), toSection: 0)
         await pageTabBar.tabBarDataSource.apply(tabBarSnapshot, animatingDifferences: false)
         
         pageTabBar.indicatorView.isHidden = pages.count == 0

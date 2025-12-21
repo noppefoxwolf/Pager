@@ -6,17 +6,18 @@ import os
 public final class PageTabBar: UICollectionView {
     let indicatorView = PageTabBarIndicatorView()
     weak var tabBarDelegate: (any PageTabBarDelegate)? = nil
-    lazy var tabBarDataSource = UICollectionViewDiffableDataSource<Int, Page>(
+    lazy var tabBarDataSource = UICollectionViewDiffableDataSource<Int, Page.ID>(
         collectionView: self,
-        cellProvider: { [unowned self] _, indexPath, item in
-            dequeueConfiguredReusableCell(
-                using: cellRegistration,
+        cellProvider: { [unowned self] collectionView, indexPath, item in
+            collectionView.dequeueConfiguredReusableCell(
+                using: self.cellRegistration,
                 for: indexPath,
                 item: item
             )
         }
     )
     let feedbackGenerator = FeedbackGenerator()
+    var pagesByID: [Page.ID: Page] = [:]
     
     let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
@@ -25,6 +26,7 @@ public final class PageTabBar: UICollectionView {
     
     public init() {
         super.init(frame: .zero, collectionViewLayout: .distributional())
+        _ = cellRegistration
         backgroundColor = .clear
         delegate = self
         showsHorizontalScrollIndicator = false
@@ -41,10 +43,14 @@ public final class PageTabBar: UICollectionView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    let cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, Page>(
-        handler: { cell, _, item in
+    lazy var cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, Page.ID>(
+        handler: { [weak self] cell, _, item in
+            guard let page = self?.pagesByID[item] else {
+                cell.contentConfiguration = nil
+                return
+            }
             var contentConfiguration = cell.labelConfiguration()
-            contentConfiguration.text = item.title
+            contentConfiguration.text = page.title
             contentConfiguration.textProperties = .init({ [weak cell] attributeContainer in
                 var attributeContainer = attributeContainer
                 if cell?.configurationState.isSelected == true {
@@ -144,6 +150,9 @@ extension PageTabBar: UICollectionViewDelegate {
 
 extension UICollectionView {
     package func rowSequence(for section: Int) -> some Sequence<Int> {
+        guard section >= 0, numberOfSections > section else {
+            return (0..<0)
+        }
         let numberOfRows = numberOfItems(inSection: section)
         return (0..<numberOfRows)
     }
