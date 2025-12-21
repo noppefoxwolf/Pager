@@ -65,6 +65,10 @@ open class PageViewController: WorkaroundCollectionViewController {
         super.viewDidLoad()
         
         pageTabBar.tabBarDelegate = self
+        
+        Task {
+            await reloadData()
+        }
     }
     
     open override func scrollViewDidScroll(_ scrollView: UIScrollView) {

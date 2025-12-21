@@ -70,10 +70,6 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             incrementButton,
             decrementButton,
         ]
-        
-        Task {
-            await reloadData()
-        }
     }
     
     func willTransition(to pendingViewControllers: [UIViewController]) {
