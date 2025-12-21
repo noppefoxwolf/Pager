@@ -5,6 +5,18 @@ public final class Page: Identifiable {
     public let title: String
     public let viewControllerProvider: @MainActor @Sendable (Page) -> UIViewController
     
+    private var _viewController: UIViewController? = nil
+    
+    @MainActor
+    public var viewController: UIViewController {
+        if let _viewController {
+            return _viewController
+        }
+        let newViewController = viewControllerProvider(self)
+        _viewController = newViewController
+        return newViewController
+    }
+    
     public init(
         id: String,
         title: String,
