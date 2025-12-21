@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/noppefoxwolf/CollectionViewDistributionalLayout",
       "state" : {
-        "revision" : "f8f96e4255bcf952bcaaf3d1d0658e9f9bdbe0a6",
-        "version" : "0.0.2"
+        "revision" : "fbf176e53e5cf530f7897dcaf4cafb9c3add4d2e",
+        "version" : "0.0.4"
       }
     }
   ],
