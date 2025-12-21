@@ -92,29 +92,6 @@ open class PageViewController: WorkaroundCollectionViewController {
         }
     )
     
-    open override func viewWillTransition(
-        to size: CGSize,
-        with coordinator: UIViewControllerTransitionCoordinator
-    ) {
-        super.viewWillTransition(to: size, with: coordinator)
-        
-        let offset = pageTabBar.contentOffset
-        let width = pageTabBar.bounds.size.width
-        
-        guard width > 0 else { return }
-        let index = round(offset.x / width)
-        guard index.isNormal else { return }
-        
-        let newOffset = CGPoint(x: index * size.width, y: offset.y)
-        coordinator.animate(
-            alongsideTransition: { [unowned pageTabBar] (context) in
-                pageTabBar.reloadData()
-                pageTabBar.setContentOffset(newOffset, animated: false)
-            },
-            completion: nil
-        )
-    }
-    
     var percentComplete: CGFloat {
         let width = collectionView.bounds.size.width
         guard width > 0 else { return 0.0 }
