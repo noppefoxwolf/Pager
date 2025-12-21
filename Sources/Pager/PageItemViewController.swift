@@ -1,5 +1,6 @@
 import UIKit
 
+// workaround: 直接additionalSafeAreaInsetsを触らないようにするために、PageItemViewControllerを噛ませる
 final class PageItemViewController: UIViewController {
     let viewController: UIViewController
     
