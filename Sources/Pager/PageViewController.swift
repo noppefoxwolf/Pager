@@ -153,7 +153,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     open override func contentScrollView(for edge: NSDirectionalRectEdge) -> UIScrollView? {
         guard isViewLoaded else { return nil }
         guard let indexPath = indexPathForCenterItem else { return nil }
-        return pages[indexPath.section].viewController.contentScrollView(for: edge)
+        return pages[indexPath.row].viewController.contentScrollView(for: edge)
     }
     
     open override func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
