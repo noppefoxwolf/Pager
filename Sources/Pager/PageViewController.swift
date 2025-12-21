@@ -38,6 +38,8 @@ open class PageViewController: WorkaroundCollectionViewController {
         }
     }
     
+    // TODO: setPages
+    
     public init(pages: [Page] = []) {
         self.pages = pages
         super.init(collectionViewLayout: .paging())
@@ -80,7 +82,7 @@ open class PageViewController: WorkaroundCollectionViewController {
                 cell.contentConfiguration = nil
                 return
             }
-            let contentViewController = page.viewControllerProvider(page)
+            let contentViewController = page.viewController
             let viewController = PageItemViewController(viewController: contentViewController)
             viewController.additionalSafeAreaInsets = itemContentInsets
             cell.contentConfiguration = cell.viewControllerConfiguration(
