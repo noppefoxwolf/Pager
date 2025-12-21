@@ -145,10 +145,8 @@ open class PageViewController: WorkaroundCollectionViewController {
         pagesByID = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, $0) })
         
         var snapshot = NSDiffableDataSourceSnapshot<Int, Page.ID>()
-        for (offset, tab) in pages.enumerated() {
-            snapshot.appendSections([offset])
-            snapshot.appendItems([tab.id], toSection: offset)
-        }
+        snapshot.appendSections([0])
+        snapshot.appendItems(pages.map(\.id), toSection: 0)
         
         await dataSource.apply(snapshot, animatingDifferences: false)
         
@@ -177,7 +175,7 @@ open class PageViewController: WorkaroundCollectionViewController {
 extension PageViewController: PageTabBarDelegate {
     func pageTabBar(_ pageTabBar: PageTabBar, didSelected index: Int) {
         collectionView.scrollToItem(
-            at: IndexPath(row: 0, section: index),
+            at: IndexPath(row: index, section: 0),
             at: .centeredHorizontally,
             animated: true
         )

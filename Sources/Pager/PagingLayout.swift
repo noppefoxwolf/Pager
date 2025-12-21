@@ -22,7 +22,6 @@ extension UICollectionViewLayout {
                     count: 1
                 )
                 let section = NSCollectionLayoutSection(group: group)
-                section.orthogonalScrollingBehavior = .paging
                 return section
             },
             configuration: configuration
