@@ -169,8 +169,8 @@ open class PageViewController: WorkaroundCollectionViewController {
     
     open override func contentScrollView(for edge: NSDirectionalRectEdge) -> UIScrollView? {
         guard isViewLoaded else { return nil }
-        let contentConfiguration = collectionView.visibleCells.first?.contentConfiguration as? ViewControllerContentConfiguration
-        return contentConfiguration?.viewController.contentScrollView(for: edge)
+        guard let indexPath = collectionView.indexPathsForVisibleItems.first else { return nil }
+        return pages[indexPath.section].viewController.contentScrollView(for: edge)
     }
 }
 
