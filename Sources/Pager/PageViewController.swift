@@ -63,6 +63,11 @@ open class PageViewController: WorkaroundCollectionViewController {
         pageTabBar.tabBarDelegate = self
     }
     
+    open override func viewIsAppearing(_ animated: Bool) {
+        super.viewIsAppearing(animated)
+        reloadData()
+    }
+    
     open override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         update(percentComplete)
     }

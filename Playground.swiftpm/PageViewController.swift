@@ -32,8 +32,6 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
         collectionView.topEdgeEffect.style = .hard
         itemContentInsets.top = pageTabBar.intrinsicContentSize.height
         
-        reloadData()
-        
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),
             primaryAction: UIAction { [unowned self] _ in
