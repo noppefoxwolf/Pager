@@ -43,6 +43,13 @@ public final class PageTabBar: UICollectionView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    public override var intrinsicContentSize: CGSize {
+        CGSize(
+            width: UIView.noIntrinsicMetric,
+            height: 34
+        )
+    }
+    
     lazy var cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, Page.ID>(
         handler: { [weak self] cell, _, item in
             guard let page = self?.pagesByID[item] else {

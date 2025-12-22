@@ -19,9 +19,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     
     public var itemContentInsets: UIEdgeInsets = .zero {
         didSet {
-            Task {
-                await reloadData()
-            }
+            reconfigure()
         }
     }
     
@@ -33,9 +31,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     public var pages: [Page] = [] {
         didSet {
             pagesByID = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, $0) })
-            Task {
-                await reloadData()
-            }
+            reloadData()
         }
     }
     
@@ -65,10 +61,6 @@ open class PageViewController: WorkaroundCollectionViewController {
         super.viewDidLoad()
         
         pageTabBar.tabBarDelegate = self
-        
-        Task {
-            await reloadData()
-        }
     }
     
     open override func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -121,7 +113,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
     
     @MainActor
-    public func reloadData() async {
+    public func reloadData() {
         guard isViewLoaded else { return }
         
         pagesByID = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, $0) })
@@ -132,17 +124,23 @@ open class PageViewController: WorkaroundCollectionViewController {
         
         let diff = dataSource.snapshot().itemIdentifiers.difference(from: snapshot.itemIdentifiers)
         
-        await dataSource.apply(snapshot, animatingDifferences: false)
-        await pageTabBar.tabBarDataSource.apply(snapshot, animatingDifferences: false)
+        dataSource.apply(snapshot, animatingDifferences: false) { [weak self] in
+            guard let self else { return }
+            if !diff.isEmpty {
+                delegate?.didFinishTransition(self)
+            }
+        }
+        pageTabBar.tabBarDataSource.apply(snapshot, animatingDifferences: false)
         
         pageTabBar.indicatorView.isHidden = pages.count == 0
         
         view.setNeedsLayout()
-        
-        if !diff.isEmpty {
-            delegate?.didFinishTransition(self)
-        }
-        
+    }
+    
+    func reconfigure() {
+        var snapshot = dataSource.snapshot()
+        snapshot.reconfigureItems(snapshot.itemIdentifiers)
+        dataSource.apply(snapshot)
     }
     
     open override func viewDidLayoutSubviews() {

@@ -11,49 +11,30 @@ struct ContentView: UIViewControllerRepresentable {
         let emptyNav = UINavigationController(rootViewController: emptyPager)
         let seededNav = UINavigationController(rootViewController: seededPager)
         
-        if #available(iOS 18.0, *) {
-            let vc = UITabBarController(
-                tabs: [
-                    UITab(
-                        title: "Empty",
-                        image: UIImage(systemName: "square.dashed"),
-                        identifier: "empty",
-                        viewControllerProvider: { _ in
-                            emptyNav
-                        }
-                    ),
-                    UITab(
-                        title: "Seeded",
-                        image: UIImage(systemName: "square.stack.3d.up"),
-                        identifier: "seeded",
-                        viewControllerProvider: { _ in
-                            seededNav
-                        }
-                    )
-                ]
-            )
-            if #available(iOS 26.0, *) {
-                vc.tabBarMinimizeBehavior = .onScrollDown
-            }
-            return vc
-        } else {
-            let tabBarController = UITabBarController()
-            emptyNav.tabBarItem = UITabBarItem(
-                title: "Empty",
-                image: UIImage(systemName: "square.dashed"),
-                tag: 0
-            )
-            seededNav.tabBarItem = UITabBarItem(
-                title: "Seeded",
-                image: UIImage(systemName: "square.stack.3d.up"),
-                tag: 1
-            )
-            tabBarController.viewControllers = [
-                emptyNav,
-                seededNav,
+        let vc = UITabBarController(
+            tabs: [
+                UITab(
+                    title: "Empty",
+                    image: UIImage(systemName: "square.dashed"),
+                    identifier: "empty",
+                    viewControllerProvider: { _ in
+                        emptyNav
+                    }
+                ),
+                UITab(
+                    title: "Seeded",
+                    image: UIImage(systemName: "square.stack.3d.up"),
+                    identifier: "seeded",
+                    viewControllerProvider: { _ in
+                        seededNav
+                    }
+                )
             ]
-            return tabBarController
+        )
+        if #available(iOS 26.0, *) {
+            vc.tabBarMinimizeBehavior = .onScrollDown
         }
+        return vc
     }
     
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
