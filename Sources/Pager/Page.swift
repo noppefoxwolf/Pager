@@ -1,5 +1,6 @@
 import UIKit
 
+@MainActor
 public final class Page: Identifiable {
     public let id: String
     public let title: String
