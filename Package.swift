@@ -15,7 +15,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/noppefoxwolf/CollectionViewDistributionalLayout",
-            from: "0.0.4"
+            from: "0.0.6"
         )
     ],
     targets: [
