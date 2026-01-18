@@ -126,6 +126,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Page.ID>()
         snapshot.appendSections([.main])
         snapshot.appendItems(pages.map(\.id), toSection: .main)
+        snapshot.reconfigureItems(snapshot.itemIdentifiers)
         
         let diff = dataSource.snapshot().itemIdentifiers.difference(from: snapshot.itemIdentifiers)
         
@@ -136,6 +137,8 @@ open class PageViewController: WorkaroundCollectionViewController {
             }
         }
         pageTabBar.tabBarDataSource.apply(snapshot, animatingDifferences: false)
+        let tabBarInvalidationContext = DataSourceInvalidationContext()
+        pageTabBar.collectionViewLayout.invalidateLayout(with: tabBarInvalidationContext)
         
         pageTabBar.indicatorView.isHidden = pages.count == 0
         
@@ -174,6 +177,10 @@ open class PageViewController: WorkaroundCollectionViewController {
     ) {
         delegate?.willTransition(to: [pages[indexPath.row].viewController])
     }
+}
+
+private final class DataSourceInvalidationContext: UICollectionViewLayoutInvalidationContext {
+    override var invalidateDataSourceCounts: Bool { true }
 }
 
 extension PageViewController: PageTabBarDelegate {

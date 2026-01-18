@@ -8,6 +8,13 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
         subsystem: Bundle.main.bundleIdentifier!,
         category: #file
     )
+
+    private lazy var editButton = UIBarButtonItem(
+        image: UIImage(systemName: "pencil"),
+        primaryAction: UIAction { [unowned self] _ in
+            presentTitleEditor()
+        }
+    )
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,6 +44,7 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             primaryAction: UIAction { [unowned self] _ in
                 if !pages.isEmpty {
                     pages.removeLast()
+                    updateEditButtonState()
                 }
             }
         )
@@ -62,13 +70,16 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
                     }
                 )
                 pages.append(tab)
+                updateEditButtonState()
             }
         )
         
         navigationItem.rightBarButtonItems = [
             incrementButton,
             decrementButton,
+            editButton,
         ]
+        updateEditButtonState()
     }
     
     func willTransition(to pendingViewControllers: [UIViewController]) {
@@ -77,6 +88,62 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
     
     func didFinishTransition(_ pageViewController: Pager.PageViewController) {
         logger.debug("didFinishTransition")
+    }
+}
+
+private extension PageViewController {
+    var currentPageIndex: Int? {
+        let width = collectionView.bounds.width
+        guard width > 0 else { return nil }
+        let value = collectionView.contentOffset.x / width
+        guard value.isFinite else { return nil }
+        let index = Int(value.rounded())
+        return pages.indices.contains(index) ? index : nil
+    }
+    
+    func updateEditButtonState() {
+        editButton.isEnabled = !pages.isEmpty
+    }
+    
+    func presentTitleEditor() {
+        guard let index = currentPageIndex else { return }
+        let page = pages[index]
+        
+        let alert = UIAlertController(title: "Edit Title", message: nil, preferredStyle: .alert)
+        alert.addTextField { textField in
+            textField.text = page.title
+            textField.clearButtonMode = .whileEditing
+        }
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak self, weak alert] _ in
+            guard let self else { return }
+            let newTitle = alert?.textFields?.first?.text?.trimmingCharacters(
+                in: .whitespacesAndNewlines
+            ) ?? ""
+            guard !newTitle.isEmpty else { return }
+            updatePageTitle(at: index, title: newTitle)
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    func updatePageTitle(at index: Int, title: String) {
+        guard pages.indices.contains(index) else { return }
+        let page = pages[index]
+        let viewController = page.viewController
+        viewController.title = title
+        if let childViewController = viewController as? ChildViewController {
+            childViewController.label.text = title
+        }
+        
+        let updatedPage = Page(
+            id: page.id,
+            title: title,
+            viewControllerProvider: { _ in
+                viewController
+            }
+        )
+        pages[index] = updatedPage
     }
 }
 
