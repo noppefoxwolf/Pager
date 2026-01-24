@@ -136,7 +136,14 @@ open class PageViewController: WorkaroundCollectionViewController {
                 delegate?.didFinishTransition(self)
             }
         }
-        pageTabBar.tabBarDataSource.apply(snapshot, animatingDifferences: false)
+        pageTabBar.tabBarDataSource.apply(
+            snapshot,
+            animatingDifferences: false,
+            completion: { [weak self] in
+                // workaround: CollectionViewController is not called viewDidLayoutSubviews after apply.
+                self?.view.setNeedsLayout()
+            }
+        )
         let tabBarInvalidationContext = DataSourceInvalidationContext()
         pageTabBar.collectionViewLayout.invalidateLayout(with: tabBarInvalidationContext)
         
