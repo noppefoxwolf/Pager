@@ -3,7 +3,7 @@ import os
 import ViewControllerContentConfiguration
 
 open class PageViewController: WorkaroundCollectionViewController {
-    public let pageTabBar = PageTabBar()
+    public lazy var pageTabBar = PageTabBar(parentViewController: self)
     
     lazy var dataSource = UICollectionViewDiffableDataSource<Section, Page.ID>(
         collectionView: collectionView,
@@ -31,6 +31,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     public var pages: [Page] = [] {
         didSet {
             pagesByID = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, $0) })
+            pageTabBar.pages = pages
             reloadData()
         }
     }
@@ -72,11 +73,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         update(percentComplete)
     }
     
-    private var pagesByID: [Page.ID: Page] = [:] {
-        didSet {
-            pageTabBar.pagesByID = pagesByID
-        }
-    }
+    private var pagesByID: [Page.ID: Page] = [:]
     
     lazy var cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, Page.ID>(
         handler: { [unowned self] cell, indexPath, item in
@@ -122,7 +119,8 @@ open class PageViewController: WorkaroundCollectionViewController {
         guard isViewLoaded else { return }
         
         pagesByID = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, $0) })
-        
+        pageTabBar.pages = pages
+
         var snapshot = NSDiffableDataSourceSnapshot<Section, Page.ID>()
         snapshot.appendSections([.main])
         snapshot.appendItems(pages.map(\.id), toSection: .main)
@@ -136,18 +134,6 @@ open class PageViewController: WorkaroundCollectionViewController {
                 delegate?.didFinishTransition(self)
             }
         }
-        pageTabBar.tabBarDataSource.apply(
-            snapshot,
-            animatingDifferences: false,
-            completion: { [weak self] in
-                // workaround: CollectionViewController is not called viewDidLayoutSubviews after apply.
-                self?.view.setNeedsLayout()
-            }
-        )
-        let tabBarInvalidationContext = DataSourceInvalidationContext()
-        pageTabBar.collectionViewLayout.invalidateLayout(with: tabBarInvalidationContext)
-        
-        pageTabBar.indicatorView.isHidden = pages.count == 0
         
         view.setNeedsLayout()
     }
@@ -184,10 +170,6 @@ open class PageViewController: WorkaroundCollectionViewController {
     ) {
         delegate?.willTransition(to: [pages[indexPath.row].viewController])
     }
-}
-
-private final class DataSourceInvalidationContext: UICollectionViewLayoutInvalidationContext {
-    override var invalidateDataSourceCounts: Bool { true }
 }
 
 extension PageViewController: PageTabBarDelegate {
