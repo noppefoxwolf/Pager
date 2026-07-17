@@ -3,7 +3,8 @@ import os
 import ViewControllerContentConfiguration
 
 open class PageViewController: WorkaroundCollectionViewController {
-    public lazy var pageTabBar = PageTabBar(parentViewController: self)
+    public lazy var paletteView = PaletteView(parentViewController: self)
+    var pageTabBar: PageTabBar { paletteView.pageTabBar }
     
     lazy var dataSource = UICollectionViewDiffableDataSource<Section, Page.ID>(
         collectionView: collectionView,

@@ -27,17 +27,17 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
         let interaction = UIScrollEdgeElementContainerInteraction()
         interaction.scrollView = collectionView
         interaction.edge = .top
-        pageTabBar.addInteraction(interaction)
-        collectionView.superview!.addSubview(pageTabBar)
-        pageTabBar.translatesAutoresizingMaskIntoConstraints = false
+        paletteView.addInteraction(interaction)
+        view.addSubview(paletteView)
+        paletteView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            paletteView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            paletteView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            paletteView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
         
         collectionView.topEdgeEffect.style = .hard
-        itemContentInsets.top = pageTabBar.intrinsicContentSize.height
+        itemContentInsets.top = paletteView.intrinsicContentSize.height
         
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),
