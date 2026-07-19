@@ -84,7 +84,7 @@ private struct PageTabBarItem: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.body)
+                .font(.subheadline.weight(.bold))
                 .foregroundStyle(isSelected ? Color.primary : Color.secondary)
                 .lineLimit(1)
                 .padding(.horizontal, 2)
