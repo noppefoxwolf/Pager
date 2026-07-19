@@ -1,7 +1,6 @@
 import CollectionViewDistributionalLayoutSwiftUI
 import Observation
 import SwiftUI
-import UIKit
 
 @MainActor
 @Observable
@@ -15,6 +14,9 @@ final class PageTabBarState {
 @MainActor
 public struct PageTabBar: View {
     private let state: PageTabBarState
+    private let spacing: CGFloat = 10
+    private let horizontalInset: CGFloat = 20
+    @State private var intrinsicWidth: CGFloat = 0
 
     public init(
         pages: [Page],
@@ -33,36 +35,58 @@ public struct PageTabBar: View {
     }
 
     public var body: some View {
-        ScrollViewReader { proxy in
-            DistributionalScrollView(spacing: 10, horizontalInset: 20) {
-                ForEach(state.pages) { page in
-                    let index = index(of: page) ?? 0
-                    PageTabBarItem(
-                        title: page.title,
-                        pageID: page.id,
-                        selectionProgress: selectionProgress(for: index)
-                    ) {
-                        state.onSelect?(index)
+        GeometryReader { container in
+            ScrollViewReader { proxy in
+                DistributionalScrollView(
+                    spacing: spacing,
+                    horizontalInset: horizontalInset
+                ) {
+                    ForEach(state.pages) { page in
+                        let index = index(of: page) ?? 0
+                        PageTabBarItem(
+                            title: page.title,
+                            pageID: page.id,
+                            selectionProgress: selectionProgress(for: index)
+                        ) {
+                            state.onSelect?(index)
+                        }
+                        .id(page.id)
                     }
-                    .id(page.id)
+                }
+                .coordinateSpace(name: PageTabBarCoordinateSpace.name)
+                .overlayPreferenceValue(PageTabBoundsPreferenceKey.self) { bounds in
+                    PageTabBarIndicator(
+                        bounds: bounds,
+                        pageIDs: state.pages.map(\.id),
+                        position: state.position
+                    )
+                }
+                .onChange(of: selectedIndex) { _, index in
+                    guard let pageID = state.pages[safe: index]?.id else { return }
+                    withAnimation(.snappy) {
+                        proxy.scrollTo(pageID, anchor: .center)
+                    }
+                }
+                .mask {
+                    PageTabBarEdgeMask(
+                        isScrollable: intrinsicWidth > container.size.width,
+                        fadeWidth: horizontalInset,
+                        height: container.size.height
+                    )
                 }
             }
-            .coordinateSpace(name: PageTabBarCoordinateSpace.name)
-            .overlayPreferenceValue(PageTabBoundsPreferenceKey.self) { bounds in
-                PageTabBarIndicator(
-                    bounds: bounds,
-                    pageIDs: state.pages.map(\.id),
-                    position: state.position
-                )
-            }
-            .onChange(of: selectedIndex) { _, index in
-                guard let pageID = state.pages[safe: index]?.id else { return }
-                withAnimation(.snappy) {
-                    proxy.scrollTo(pageID, anchor: .center)
-                }
-            }
-            .frame(height: 34)
         }
+        .background {
+            PageTabBarIntrinsicContent(
+                pages: state.pages,
+                spacing: spacing,
+                horizontalInset: horizontalInset
+            )
+        }
+        .onPreferenceChange(PageTabBarIntrinsicWidthPreferenceKey.self) {
+            intrinsicWidth = $0
+        }
+        .frame(height: 34)
         .sensoryFeedback(.selection, trigger: selectedIndex)
     }
 
@@ -80,6 +104,74 @@ public struct PageTabBar: View {
     }
 }
 
+private struct PageTabBarIntrinsicContent: View {
+    let pages: [Page]
+    let spacing: CGFloat
+    let horizontalInset: CGFloat
+
+    var body: some View {
+        HStack(spacing: spacing) {
+            ForEach(pages) { page in
+                Text(page.title)
+                    .font(.subheadline.weight(.bold))
+                    .lineLimit(1)
+                    .padding(.horizontal, 2)
+            }
+        }
+        .fixedSize(horizontal: true, vertical: false)
+        .padding(.horizontal, horizontalInset)
+        .hidden()
+        .background {
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: PageTabBarIntrinsicWidthPreferenceKey.self,
+                    value: proxy.size.width
+                )
+            }
+        }
+    }
+}
+
+private struct PageTabBarEdgeMask: View {
+    let isScrollable: Bool
+    let fadeWidth: CGFloat
+    let height: CGFloat
+
+    var body: some View {
+        HStack(spacing: 0) {
+            if isScrollable {
+                LinearGradient(
+                    colors: [.clear, .black],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .frame(width: fadeWidth)
+            }
+
+            Color.black
+                .frame(maxWidth: .infinity)
+
+            if isScrollable {
+                LinearGradient(
+                    colors: [.black, .clear],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .frame(width: fadeWidth)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: height)
+    }
+}
+
+private struct PageTabBarIntrinsicWidthPreferenceKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 private struct PageTabBarItem: View {
     let title: String
     let pageID: Page.ID
@@ -91,9 +183,9 @@ private struct PageTabBarItem: View {
             Text(title)
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(textColor)
-            .lineLimit(1)
-            .padding(.horizontal, 2)
-            .frame(maxHeight: .infinity)
+                .lineLimit(1)
+                .padding(.horizontal, 2)
+                .frame(maxHeight: .infinity)
                 .anchorPreference(
                     key: PageTabBoundsPreferenceKey.self,
                     value: .bounds
@@ -104,54 +196,7 @@ private struct PageTabBarItem: View {
     }
 
     private var textColor: Color {
-        Color(uiColor: UIColor { traits in
-            let secondary = UIColor.secondaryLabel.resolvedColor(with: traits)
-            let primary = UIColor.label.resolvedColor(with: traits)
-            return UIColor.blended(
-                from: secondary,
-                to: primary,
-                progress: selectionProgress
-            )
-        })
-    }
-}
-
-private extension UIColor {
-    static func blended(
-        from: UIColor,
-        to: UIColor,
-        progress: Double
-    ) -> UIColor {
-        var fromRed: CGFloat = 0
-        var fromGreen: CGFloat = 0
-        var fromBlue: CGFloat = 0
-        var fromAlpha: CGFloat = 0
-        var toRed: CGFloat = 0
-        var toGreen: CGFloat = 0
-        var toBlue: CGFloat = 0
-        var toAlpha: CGFloat = 0
-
-        guard from.getRed(
-            &fromRed,
-            green: &fromGreen,
-            blue: &fromBlue,
-            alpha: &fromAlpha
-        ), to.getRed(
-            &toRed,
-            green: &toGreen,
-            blue: &toBlue,
-            alpha: &toAlpha
-        ) else {
-            return progress < 0.5 ? from : to
-        }
-
-        let amount = CGFloat(max(0, min(1, progress)))
-        return UIColor(
-            red: fromRed + (toRed - fromRed) * amount,
-            green: fromGreen + (toGreen - fromGreen) * amount,
-            blue: fromBlue + (toBlue - fromBlue) * amount,
-            alpha: fromAlpha + (toAlpha - fromAlpha) * amount
-        )
+        Color.secondary.mix(with: .primary, by: selectionProgress)
     }
 }
 
@@ -194,7 +239,7 @@ private struct PageTabBarIndicator: View {
                     .fill(Color.accentColor)
                     .frame(
                         width: start.width + (end.width - start.width) * progress,
-                        height: 4
+                        height: 3
                     )
                     .position(
                         x: start.midX + (end.midX - start.midX) * progress,
