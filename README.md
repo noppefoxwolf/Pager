@@ -56,11 +56,10 @@ final class PagesViewController: PageViewController {
             pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            pageTabBar.heightAnchor.constraint(equalToConstant: 34)
         ])
 
         // Keep page content clear of the tab bar
-        itemContentInsets.top = 34
+        itemContentInsets.top = pageTabBar.intrinsicContentSize.height
     }
 }
 ```
