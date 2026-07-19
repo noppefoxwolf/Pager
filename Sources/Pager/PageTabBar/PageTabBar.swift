@@ -32,27 +32,36 @@ public struct PageTabBar: View {
     }
 
     public var body: some View {
-        DistributionalScrollView(spacing: 10, horizontalInset: 20) {
-            ForEach(state.pages) { page in
-                PageTabBarItem(
-                    title: page.title,
-                    pageID: page.id,
-                    isSelected: selectedIndex == index(of: page)
-                ) {
-                    guard let index = index(of: page) else { return }
-                    state.onSelect?(index)
+        ScrollViewReader { proxy in
+            DistributionalScrollView(spacing: 10, horizontalInset: 20) {
+                ForEach(state.pages) { page in
+                    PageTabBarItem(
+                        title: page.title,
+                        pageID: page.id,
+                        isSelected: selectedIndex == index(of: page)
+                    ) {
+                        guard let index = index(of: page) else { return }
+                        state.onSelect?(index)
+                    }
+                    .id(page.id)
                 }
             }
+            .coordinateSpace(name: PageTabBarCoordinateSpace.name)
+            .overlayPreferenceValue(PageTabBoundsPreferenceKey.self) { bounds in
+                PageTabBarIndicator(
+                    bounds: bounds,
+                    pageIDs: state.pages.map(\.id),
+                    position: state.position
+                )
+            }
+            .onChange(of: selectedIndex) { _, index in
+                guard let pageID = state.pages[safe: index]?.id else { return }
+                withAnimation(.snappy) {
+                    proxy.scrollTo(pageID, anchor: .center)
+                }
+            }
+            .frame(height: 34)
         }
-        .coordinateSpace(name: PageTabBarCoordinateSpace.name)
-        .overlayPreferenceValue(PageTabBoundsPreferenceKey.self) { bounds in
-            PageTabBarIndicator(
-                bounds: bounds,
-                pageIDs: state.pages.map(\.id),
-                position: state.position
-            )
-        }
-        .frame(height: 34)
         .sensoryFeedback(.selection, trigger: selectedIndex)
     }
 
