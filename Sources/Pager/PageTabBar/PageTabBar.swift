@@ -239,7 +239,7 @@ private struct PageTabBarIndicator: View {
                     .fill(Color.accentColor)
                     .frame(
                         width: start.width + (end.width - start.width) * progress,
-                        height: 3
+                        height: 2
                     )
                     .position(
                         x: start.midX + (end.midX - start.midX) * progress,
