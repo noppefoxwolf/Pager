@@ -92,6 +92,8 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
     }
 }
 
+// Workaround: UIScrollEdgeElementContainerInteraction needs a container view
+// to apply the collection view's topEdgeEffect correctly.
 private final class PageTabBarContainerView: UIView {
     private let backgroundView = UILabel()
     private let contentView: UIView
