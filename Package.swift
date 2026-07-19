@@ -22,7 +22,6 @@ let package = Package(
         .target(
             name: "Pager",
             dependencies: [
-                "CollectionViewDistributionalLayout",
                 .product(
                     name: "CollectionViewDistributionalLayoutSwiftUI",
                     package: "collectionviewdistributionallayout"
