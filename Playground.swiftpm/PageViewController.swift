@@ -27,17 +27,18 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
         let interaction = UIScrollEdgeElementContainerInteraction()
         interaction.scrollView = collectionView
         interaction.edge = .top
-        pageTabBar.addInteraction(interaction)
-        collectionView.superview!.addSubview(pageTabBar)
-        pageTabBar.translatesAutoresizingMaskIntoConstraints = false
+        let pageTabBarContainerView = PageTabBarContainerView(contentView: pageTabBar)
+        pageTabBarContainerView.addInteraction(interaction)
+        collectionView.superview!.addSubview(pageTabBarContainerView)
+        pageTabBarContainerView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            pageTabBarContainerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            pageTabBarContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            pageTabBarContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
         
         collectionView.topEdgeEffect.style = .hard
-        itemContentInsets.top = pageTabBar.intrinsicContentSize.height
+        itemContentInsets.top = pageTabBarContainerView.intrinsicContentSize.height
         
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),
@@ -88,6 +89,46 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
     
     func didFinishTransition(_ pageViewController: Pager.PageViewController) {
         logger.debug("didFinishTransition")
+    }
+}
+
+// Workaround: UIScrollEdgeElementContainerInteraction needs a container view
+// to apply the collection view's topEdgeEffect correctly.
+private final class PageTabBarContainerView: UIView {
+    private let backgroundView = UILabel()
+    private let contentView: UIView
+
+    init(contentView: UIView) {
+        self.contentView = contentView
+        super.init(frame: .zero)
+
+        isUserInteractionEnabled = true
+        backgroundView.text = nil
+        backgroundView.isUserInteractionEnabled = false
+        addSubview(backgroundView)
+        addSubview(contentView)
+
+        backgroundView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            backgroundView.topAnchor.constraint(equalTo: topAnchor),
+            backgroundView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            backgroundView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            backgroundView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            contentView.topAnchor.constraint(equalTo: topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            contentView.trailingAnchor.constraint(equalTo: trailingAnchor),
+        ])
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var intrinsicContentSize: CGSize {
+        contentView.intrinsicContentSize
     }
 }
 

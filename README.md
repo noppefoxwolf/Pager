@@ -56,11 +56,10 @@ final class PagesViewController: PageViewController {
             pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            pageTabBar.heightAnchor.constraint(equalToConstant: 34)
         ])
 
         // Keep page content clear of the tab bar
-        itemContentInsets.top = 34
+        itemContentInsets.top = pageTabBar.intrinsicContentSize.height
     }
 }
 ```
@@ -68,9 +67,9 @@ final class PagesViewController: PageViewController {
 `pages` can be updated at runtime (append/remove) and the pager refreshes automatically through diffable data sources; `selectedPage` tracks the visible page and can be set to jump.
 
 ## Key types
-- `PageViewController`: horizontally paged collection view controller exposing `pages`, `selectedPage`, `pageTabBar`, `itemContentInsets`, and `reloadData()`.
+- `PageViewController`: horizontally paged collection view controller exposing `pages`, `pageTabBar` (`UIView` backed by SwiftUI), `itemContentInsets`, and `reloadData()`.
 - `Page`: page descriptor containing `id`, `title`, and a `viewControllerProvider`.
-- `PageTabBar`: horizontally scrolling tab bar with an indicator that tracks scroll progress and emits selection haptics.
+- `PageTabBar`: SwiftUI horizontally scrolling tab bar using `CollectionViewDistributionalLayoutSwiftUI`; its indicator tracks scroll progress and emits selection haptics.
 
 ## Examples
 Open `Playground.swiftpm` to try the interactive sample (dynamic tab add/remove, table/collection content). The preview GIF in `.github/sample.gif` was captured from this playground.
