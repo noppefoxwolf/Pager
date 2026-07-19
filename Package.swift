@@ -23,6 +23,10 @@ let package = Package(
             name: "Pager",
             dependencies: [
                 "CollectionViewDistributionalLayout",
+                .product(
+                    name: "CollectionViewDistributionalLayoutSwiftUI",
+                    package: "collectionviewdistributionallayout"
+                ),
                 "LabelContentConfiguration",
                 "ViewControllerContentConfiguration",
             ]

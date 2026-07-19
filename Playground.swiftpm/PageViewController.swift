@@ -34,10 +34,11 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            pageTabBar.heightAnchor.constraint(equalToConstant: 34),
         ])
         
         collectionView.topEdgeEffect.style = .hard
-        itemContentInsets.top = pageTabBar.intrinsicContentSize.height
+        itemContentInsets.top = 34
         
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),
