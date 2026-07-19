@@ -1,6 +1,7 @@
 import CollectionViewDistributionalLayoutSwiftUI
 import Observation
 import SwiftUI
+import UIKit
 
 @MainActor
 @Observable
@@ -35,12 +36,12 @@ public struct PageTabBar: View {
         ScrollViewReader { proxy in
             DistributionalScrollView(spacing: 10, horizontalInset: 20) {
                 ForEach(state.pages) { page in
+                    let index = index(of: page) ?? 0
                     PageTabBarItem(
                         title: page.title,
                         pageID: page.id,
-                        isSelected: selectedIndex == index(of: page)
+                        selectionProgress: selectionProgress(for: index)
                     ) {
-                        guard let index = index(of: page) else { return }
                         state.onSelect?(index)
                     }
                     .id(page.id)
@@ -73,22 +74,26 @@ public struct PageTabBar: View {
     private func index(of page: Page) -> Int? {
         state.pages.firstIndex { $0.id == page.id }
     }
+
+    private func selectionProgress(for index: Int) -> Double {
+        max(0, min(1, 1 - abs(state.position - Double(index))))
+    }
 }
 
 private struct PageTabBarItem: View {
     let title: String
     let pageID: Page.ID
-    let isSelected: Bool
+    let selectionProgress: Double
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Text(title)
                 .font(.subheadline.weight(.bold))
-                .foregroundStyle(isSelected ? Color.primary : Color.secondary)
-                .lineLimit(1)
-                .padding(.horizontal, 2)
-                .frame(maxHeight: .infinity)
+                .foregroundStyle(textColor)
+            .lineLimit(1)
+            .padding(.horizontal, 2)
+            .frame(maxHeight: .infinity)
                 .anchorPreference(
                     key: PageTabBoundsPreferenceKey.self,
                     value: .bounds
@@ -96,6 +101,57 @@ private struct PageTabBarItem: View {
         }
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var textColor: Color {
+        Color(uiColor: UIColor { traits in
+            let secondary = UIColor.secondaryLabel.resolvedColor(with: traits)
+            let primary = UIColor.label.resolvedColor(with: traits)
+            return UIColor.blended(
+                from: secondary,
+                to: primary,
+                progress: selectionProgress
+            )
+        })
+    }
+}
+
+private extension UIColor {
+    static func blended(
+        from: UIColor,
+        to: UIColor,
+        progress: Double
+    ) -> UIColor {
+        var fromRed: CGFloat = 0
+        var fromGreen: CGFloat = 0
+        var fromBlue: CGFloat = 0
+        var fromAlpha: CGFloat = 0
+        var toRed: CGFloat = 0
+        var toGreen: CGFloat = 0
+        var toBlue: CGFloat = 0
+        var toAlpha: CGFloat = 0
+
+        guard from.getRed(
+            &fromRed,
+            green: &fromGreen,
+            blue: &fromBlue,
+            alpha: &fromAlpha
+        ), to.getRed(
+            &toRed,
+            green: &toGreen,
+            blue: &toBlue,
+            alpha: &toAlpha
+        ) else {
+            return progress < 0.5 ? from : to
+        }
+
+        let amount = CGFloat(max(0, min(1, progress)))
+        return UIColor(
+            red: fromRed + (toRed - fromRed) * amount,
+            green: fromGreen + (toGreen - fromGreen) * amount,
+            blue: fromBlue + (toBlue - fromBlue) * amount,
+            alpha: fromAlpha + (toAlpha - fromAlpha) * amount
+        )
     }
 }
 
