@@ -48,18 +48,19 @@ final class PagesViewController: PageViewController {
         let interaction = UIScrollEdgeElementContainerInteraction()
         interaction.scrollView = collectionView
         interaction.edge = .top
-        pageTabBar.addInteraction(interaction)
+        attachPageTabBar { pageTabBar in
+            pageTabBar.addInteraction(interaction)
+            collectionView.superview?.addSubview(pageTabBar)
+            pageTabBar.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            ])
 
-        collectionView.superview?.addSubview(pageTabBar)
-        pageTabBar.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-        ])
-
-        // Keep page content clear of the tab bar
-        itemContentInsets.top = pageTabBar.intrinsicContentSize.height
+            // Keep page content clear of the tab bar
+            itemContentInsets.top = pageTabBar.intrinsicContentSize.height
+        }
     }
 }
 ```
@@ -67,7 +68,7 @@ final class PagesViewController: PageViewController {
 `pages` can be updated at runtime (append/remove) and the pager refreshes automatically through diffable data sources; `selectedPage` tracks the visible page and can be set to jump.
 
 ## Key types
-- `PageViewController`: horizontally paged collection view controller exposing `pages`, `pageTabBar` (`UIView` backed by SwiftUI), `itemContentInsets`, and `reloadData()`.
+- `PageViewController`: horizontally paged collection view controller exposing `pages`, `attachPageTabBar(using:)`, `detachPageTabBar(using:)`, `itemContentInsets`, and `reloadData()`.
 - `Page`: page descriptor containing `id`, `title`, and a `viewControllerProvider`.
 - `PageTabBar`: SwiftUI horizontally scrolling tab bar using `CollectionViewDistributionalLayoutSwiftUI`; its indicator tracks scroll progress and emits selection haptics.
 

@@ -6,7 +6,7 @@ import ViewControllerContentConfiguration
 open class PageViewController: WorkaroundCollectionViewController {
     private let pageTabBarState: PageTabBarState
     private let pageTabBarController: UIHostingController<PageTabBar>
-    public let pageTabBar: UIView
+    private let pageTabBar: UIView
     
     lazy var dataSource = UICollectionViewDiffableDataSource<Section, Page.ID>(
         collectionView: collectionView,
