@@ -24,21 +24,25 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             navigationItem.title = "Pager Example"
         }
         
-        let interaction = UIScrollEdgeElementContainerInteraction()
-        interaction.scrollView = collectionView
-        interaction.edge = .top
-        let pageTabBarContainerView = PageTabBarContainerView(contentView: pageTabBar)
-        pageTabBarContainerView.addInteraction(interaction)
-        collectionView.superview!.addSubview(pageTabBarContainerView)
-        pageTabBarContainerView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            pageTabBarContainerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            pageTabBarContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            pageTabBarContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-        ])
-        
         collectionView.topEdgeEffect.style = .hard
-        itemContentInsets.top = pageTabBarContainerView.intrinsicContentSize.height
+
+        attachPageTabBar { pageTabBar in
+            let interaction = UIScrollEdgeElementContainerInteraction()
+            interaction.scrollView = collectionView
+            interaction.edge = .top
+
+            let pageTabBarContainerView = PageTabBarContainerView(contentView: pageTabBar)
+            pageTabBarContainerView.addInteraction(interaction)
+            collectionView.superview!.addSubview(pageTabBarContainerView)
+            pageTabBarContainerView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                pageTabBarContainerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                pageTabBarContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                pageTabBarContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            ])
+
+            itemContentInsets.top = pageTabBarContainerView.intrinsicContentSize.height
+        }
         
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),

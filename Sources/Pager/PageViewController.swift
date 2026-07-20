@@ -77,6 +77,29 @@ open class PageViewController: WorkaroundCollectionViewController {
             self?.selectPage(at: index)
         }
     }
+
+    /// Attaches the tab bar view and completes its view controller containment.
+    @MainActor
+    public func attachPageTabBar(using body: (UIView) -> Void) {
+        guard pageTabBarController.parent == nil else { return }
+
+        addChild(pageTabBarController)
+        body(pageTabBar)
+        pageTabBarController.didMove(toParent: self)
+    }
+
+    /// Removes the tab bar view and tears down its view controller containment.
+    @MainActor
+    public func detachPageTabBar(using body: (UIView) -> Void) {
+        guard pageTabBarController.parent === self else {
+            body(pageTabBar)
+            return
+        }
+
+        pageTabBarController.willMove(toParent: nil)
+        body(pageTabBar)
+        pageTabBarController.removeFromParent()
+    }
     
     open override func viewIsAppearing(_ animated: Bool) {
         super.viewIsAppearing(animated)
