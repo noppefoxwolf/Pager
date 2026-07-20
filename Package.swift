@@ -26,12 +26,8 @@ let package = Package(
                     name: "CollectionViewDistributionalLayoutSwiftUI",
                     package: "collectionviewdistributionallayout"
                 ),
-                "LabelContentConfiguration",
                 "ViewControllerContentConfiguration",
             ]
-        ),
-        .target(
-            name: "LabelContentConfiguration"
         ),
         .target(
             name: "ViewControllerContentConfiguration"
