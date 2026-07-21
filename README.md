@@ -48,7 +48,7 @@ final class PagesViewController: PageViewController {
         let interaction = UIScrollEdgeElementContainerInteraction()
         interaction.scrollView = collectionView
         interaction.edge = .top
-        attachPageTabBar { pageTabBar in
+        attachPageTabBar(parent: self) { pageTabBar in
             pageTabBar.addInteraction(interaction)
             collectionView.superview?.addSubview(pageTabBar)
             pageTabBar.translatesAutoresizingMaskIntoConstraints = false
@@ -68,7 +68,7 @@ final class PagesViewController: PageViewController {
 `pages` can be updated at runtime (append/remove) and the pager refreshes automatically through diffable data sources; `selectedPage` tracks the visible page and can be set to jump.
 
 ## Key types
-- `PageViewController`: horizontally paged collection view controller exposing `pages`, `attachPageTabBar(using:)`, `detachPageTabBar(using:)`, `itemContentInsets`, and `reloadData()`.
+- `PageViewController`: horizontally paged collection view controller exposing `pages`, `attachPageTabBar(parent:using:)`, `detachPageTabBar(using:)`, `itemContentInsets`, and `reloadData()`.
 - `Page`: page descriptor containing `id`, `title`, and a `viewControllerProvider`.
 - `PageTabBar`: SwiftUI horizontally scrolling tab bar using `CollectionViewDistributionalLayoutSwiftUI`; its indicator tracks scroll progress and emits selection haptics.
 

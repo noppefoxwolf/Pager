@@ -26,7 +26,7 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
         
         collectionView.topEdgeEffect.style = .hard
 
-        attachPageTabBar { pageTabBar in
+        attachPageTabBar(parent: self) { pageTabBar in
             let interaction = UIScrollEdgeElementContainerInteraction()
             interaction.scrollView = collectionView
             interaction.edge = .top
