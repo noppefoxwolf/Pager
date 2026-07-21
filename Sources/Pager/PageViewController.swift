@@ -46,6 +46,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         let pageTabBarController = UIHostingController(
             rootView: PageTabBar(state: pageTabBarState)
         )
+        pageTabBarController.safeAreaRegions = []
         pageTabBarController.view.backgroundColor = .clear
 
         self.pageTabBarState = pageTabBarState
