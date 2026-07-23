@@ -18,6 +18,8 @@ public final class PageTabBar: UIView, UIContentView {
         super.init(frame: .zero)
 
         backgroundColor = .clear
+        hostedContentView.layoutMargins = .zero
+        hostedContentView.preservesSuperviewLayoutMargins = false
         hostedContentView.backgroundColor = .clear
         hostedContentView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(hostedContentView)
