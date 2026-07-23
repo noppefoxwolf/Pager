@@ -166,7 +166,9 @@ open class PageViewController: WorkaroundCollectionViewController {
     open override func contentScrollView(for edge: NSDirectionalRectEdge) -> UIScrollView? {
         guard isViewLoaded else { return nil }
         guard let indexPath = indexPathForCenterItem else { return nil }
-        return pages[indexPath.row].viewController.contentScrollView(for: edge)
+        let contentViewController = pages[indexPath.row].viewController
+        let contentScrollView = contentViewController.contentScrollView(for: edge)
+        return contentScrollView ?? contentViewController.rootScrollView
     }
 
     open override func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
@@ -199,5 +201,11 @@ extension PageViewController: PageTabBarDelegate {
         )
         // 既に選択済みのアイテムを選択するとスクロールが発生しないので１度呼ぶ
         pageTabBar.setIndicator(percentComplete)
+    }
+}
+
+private extension UIViewController {
+    var rootScrollView: UIScrollView? {
+        view as? UIScrollView
     }
 }
