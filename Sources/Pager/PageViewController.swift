@@ -3,7 +3,7 @@ import ViewControllerContentConfiguration
 import os
 
 open class PageViewController: WorkaroundCollectionViewController {
-    public let pageTabBar = PageTabBar()
+    public let pageTabBar = PageTabBarController()
 
     lazy var dataSource = UICollectionViewDiffableDataSource<Section, Page.ID>(
         collectionView: collectionView,
@@ -31,6 +31,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     public var pages: [Page] = [] {
         didSet {
             pagesByID = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, $0) })
+            pageTabBar.pages = pages
             reloadData()
         }
     }
@@ -40,6 +41,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     public init(pages: [Page] = []) {
         self.pages = pages
         super.init(collectionViewLayout: .paging())
+        pageTabBar.pages = pages
     }
 
     @MainActor required public init?(coder: NSCoder) {
@@ -60,7 +62,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     open override func viewDidLoad() {
         super.viewDidLoad()
 
-        pageTabBar.tabBarDelegate = self
+        pageTabBar.delegate = self
     }
 
     open override func viewIsAppearing(_ animated: Bool) {
@@ -72,11 +74,7 @@ open class PageViewController: WorkaroundCollectionViewController {
         update(percentComplete)
     }
 
-    private var pagesByID: [Page.ID: Page] = [:] {
-        didSet {
-            pageTabBar.pagesByID = pagesByID
-        }
-    }
+    private var pagesByID: [Page.ID: Page] = [:]
 
     lazy var cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, Page.ID>(
         handler: { [unowned self] cell, indexPath, item in
@@ -114,7 +112,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
 
     func update(_ percentComplete: Double) {
-        pageTabBar.setIndicator(percentComplete)
+        pageTabBar.setTransitionProgress(percentComplete)
     }
 
     @MainActor
@@ -136,19 +134,6 @@ open class PageViewController: WorkaroundCollectionViewController {
                 delegate?.didFinishTransition(self)
             }
         }
-        pageTabBar.tabBarDataSource.apply(
-            snapshot,
-            animatingDifferences: false,
-            completion: { [weak self] in
-                // workaround: CollectionViewController is not called viewDidLayoutSubviews after apply.
-                self?.view.setNeedsLayout()
-            }
-        )
-        let tabBarInvalidationContext = DataSourceInvalidationContext()
-        pageTabBar.collectionViewLayout.invalidateLayout(with: tabBarInvalidationContext)
-
-        pageTabBar.indicatorView.isHidden = pages.count == 0
-
         view.setNeedsLayout()
     }
 
@@ -188,19 +173,14 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
 }
 
-private final class DataSourceInvalidationContext: UICollectionViewLayoutInvalidationContext {
-    override var invalidateDataSourceCounts: Bool { true }
-}
-
-extension PageViewController: PageTabBarDelegate {
-    func pageTabBar(_ pageTabBar: PageTabBar, didSelected index: Int) {
+extension PageViewController: PageTabBarControllerDelegate {
+    public func pageTabBarController(_ controller: PageTabBarController, didSelect page: Page) {
+        guard let index = pages.firstIndex(where: { $0.id == page.id }) else { return }
         collectionView.scrollToItem(
             at: IndexPath(row: index, section: 0),
             at: .centeredHorizontally,
             animated: true
         )
-        // 既に選択済みのアイテムを選択するとスクロールが発生しないので１度呼ぶ
-        pageTabBar.setIndicator(percentComplete)
     }
 }
 

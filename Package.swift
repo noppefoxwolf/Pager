@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "Pager",
-    platforms: [.iOS(.v17), .visionOS(.v1)],
+    platforms: [.iOS(.v18), .visionOS(.v2)],
     products: [
         .library(
             name: "Pager",
@@ -15,14 +15,17 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/noppefoxwolf/CollectionViewDistributionalLayout",
-            from: "0.0.6"
+            from: "0.0.7"
         )
     ],
     targets: [
         .target(
             name: "Pager",
             dependencies: [
-                "CollectionViewDistributionalLayout",
+                .product(
+                    name: "CollectionViewDistributionalLayoutSwiftUI",
+                    package: "collectionviewdistributionallayout"
+                ),
                 "LabelContentConfiguration",
                 "ViewControllerContentConfiguration",
             ]

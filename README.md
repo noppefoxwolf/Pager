@@ -48,16 +48,18 @@ final class PagesViewController: PageViewController {
         let interaction = UIScrollEdgeElementContainerInteraction()
         interaction.scrollView = collectionView
         interaction.edge = .top
-        pageTabBar.addInteraction(interaction)
+        pageTabBar.view.addInteraction(interaction)
 
-        collectionView.superview?.addSubview(pageTabBar)
-        pageTabBar.translatesAutoresizingMaskIntoConstraints = false
+        addChild(pageTabBar)
+        view.addSubview(pageTabBar.view)
+        pageTabBar.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            pageTabBar.heightAnchor.constraint(equalToConstant: 34)
+            pageTabBar.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            pageTabBar.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            pageTabBar.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            pageTabBar.view.heightAnchor.constraint(equalToConstant: 34)
         ])
+        pageTabBar.didMove(toParent: self)
 
         // Keep page content clear of the tab bar
         itemContentInsets.top = 34

@@ -1,173 +1,218 @@
-import CollectionViewDistributionalLayout
-import LabelContentConfiguration
-import UIKit
-import os
+import CollectionViewDistributionalLayoutSwiftUI
+import Observation
+import SwiftUI
 
-public final class PageTabBar: UICollectionView {
-    let indicatorView = PageTabBarIndicatorView()
-    weak var tabBarDelegate: (any PageTabBarDelegate)? = nil
-    lazy var tabBarDataSource = UICollectionViewDiffableDataSource<Section, Page.ID>(
-        collectionView: self,
-        cellProvider: { [unowned self] collectionView, indexPath, item in
-            collectionView.dequeueConfiguredReusableCell(
-                using: self.cellRegistration,
-                for: indexPath,
-                item: item
-            )
-        }
-    )
-    let feedbackGenerator = FeedbackGenerator()
-    var pagesByID: [Page.ID: Page] = [:]
-
-    let logger = Logger(
-        subsystem: Bundle.main.bundleIdentifier!,
-        category: #file
-    )
-
-    public init() {
-        super.init(frame: .zero, collectionViewLayout: .distributional())
-        _ = cellRegistration
-        backgroundColor = .clear
-        delegate = self
-        showsHorizontalScrollIndicator = false
-        showsVerticalScrollIndicator = false
-        contentInsetAdjustmentBehavior = .never
-
-        feedbackGenerator.prepare()
-
-        indicatorView.translatesAutoresizingMaskIntoConstraints = true
-        addSubview(indicatorView)
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    public override var intrinsicContentSize: CGSize {
-        CGSize(
-            width: UIView.noIntrinsicMetric,
-            height: 34
-        )
-    }
-
-    lazy var cellRegistration = UICollectionView.CellRegistration<UICollectionViewCell, Page.ID>(
-        handler: { [weak self] cell, _, item in
-            guard let page = self?.pagesByID[item] else {
-                cell.contentConfiguration = nil
-                return
-            }
-            var contentConfiguration = cell.labelConfiguration()
-            contentConfiguration.text = page.title
-            contentConfiguration.textProperties = .init({ [weak cell] attributeContainer in
-                var attributeContainer = attributeContainer
-                if cell?.configurationState.isSelected == true {
-                    attributeContainer.foregroundColor = UIColor.label
-                } else {
-                    attributeContainer.foregroundColor = UIColor.placeholderText
-                }
-                return attributeContainer
-            })
-            cell.contentConfiguration = contentConfiguration
-        }
-    )
-
-    func setIndicator(_ position: Double) {
-        updateSelectedTabItem(for: position)
-        updateIndicatorFrame(for: position)
-    }
-
-    private func updateSelectedTabItem(for position: Double) {
-        let section = 0
-        let focusIndex = Int(position.rounded())
-        let indexPath = IndexPath(row: focusIndex, section: section)
-
-        guard rowSequence(for: section).contains(focusIndex) else { return }
-
-        // Trigger haptic feedback when selection changes
-        let selectedItems = indexPathsForSelectedItems ?? []
-        if !selectedItems.contains(indexPath) {
-            feedbackGenerator.selectionChanged()
-            selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
-        }
-    }
-
-    private func updateIndicatorFrame(for position: Double) {
-        let section = 0
-        let prevIndex = Int(floor(position))
-        let nextIndex = Int(ceil(position))
-        let progress = position - floor(position)
-
-        guard
-            let prevAttributes = layoutAttributesForItem(
-                at: IndexPath(row: prevIndex, section: section)
-            )
-        else {
-            return
-        }
-
-        let nextAttributes =
-            layoutAttributesForItem(
-                at: IndexPath(row: nextIndex, section: section)
-            ) ?? prevAttributes
-
-        // Prefer actual label frames (reflect font / content changes), fall back to layout attributes
-        let startFrame =
-            labelFrame(at: prevIndex)
-            ?? CGRect(
-                x: prevAttributes.center.x - prevAttributes.size.width / 2,
-                y: prevAttributes.frame.minY,
-                width: prevAttributes.size.width,
-                height: prevAttributes.size.height
-            )
-        let endFrame =
-            labelFrame(at: nextIndex)
-            ?? CGRect(
-                x: nextAttributes.center.x - nextAttributes.size.width / 2,
-                y: nextAttributes.frame.minY,
-                width: nextAttributes.size.width,
-                height: nextAttributes.size.height
-            )
-
-        let startWidth = startFrame.width
-        let endWidth = endFrame.width
-        let interpolatedWidth = startWidth + (endWidth - startWidth) * progress
-
-        let startCenterX = startFrame.midX
-        let endCenterX = endFrame.midX
-        let interpolatedCenterX = startCenterX + (endCenterX - startCenterX) * progress
-
-        // Update indicator frame
-        indicatorView.frame.size = CGSize(width: interpolatedWidth, height: 4)
-        indicatorView.frame.origin.y = bounds.height - 4
-        indicatorView.center.x = interpolatedCenterX
-    }
-
-    /// 現在描画されているセルからラベルのフレームを取り出し、`PageTabBar` 座標系に変換して返す
-    private func labelFrame(at index: Int) -> CGRect? {
-        let indexPath = IndexPath(row: index, section: 0)
-        guard let cell = cellForItem(at: indexPath) else { return nil }
-        let label = (cell.contentView as? LabelContentView)?.label
-        guard let label else { return nil }
-        return label.convert(label.bounds, to: self)
-    }
+@MainActor
+@Observable
+final class PageTabBarState {
+    var pages: [Page] = []
+    var position: Double = 0
+    var onSelect: ((Int) -> Void)?
 }
 
-extension PageTabBar: UICollectionViewDelegate {
-    public func collectionView(
-        _ collectionView: UICollectionView,
-        didSelectItemAt indexPath: IndexPath
+/// A horizontally scrolling page selector whose indicator follows transition progress.
+@MainActor
+public struct PageTabBar: View {
+    private let state: PageTabBarState
+    private let spacing: CGFloat = 10
+    private let horizontalInset: CGFloat = 20
+    @State private var intrinsicWidth: CGFloat = 0
+
+    public init(
+        pages: [Page],
+        position: Double = 0,
+        onSelect: @escaping (Int) -> Void
     ) {
-        collectionView.deselectItem(at: indexPath, animated: false)
-        tabBarDelegate?.pageTabBar(self, didSelected: indexPath.row)
+        let state = PageTabBarState()
+        state.pages = pages
+        state.position = position
+        state.onSelect = onSelect
+        self.state = state
+    }
+
+    init(state: PageTabBarState) {
+        self.state = state
+    }
+
+    public var body: some View {
+        GeometryReader { container in
+            ScrollViewReader { proxy in
+                DistributionalScrollView(
+                    spacing: spacing,
+                    horizontalInset: horizontalInset
+                ) {
+                    ForEach(Array(state.pages.enumerated()), id: \.element.id) { index, page in
+                        PageTabBarItem(
+                            title: page.title,
+                            pageID: page.id,
+                            selectionProgress: selectionProgress(for: index),
+                            action: { state.onSelect?(index) }
+                        )
+                        .id(page.id)
+                    }
+                }
+                .coordinateSpace(name: PageTabBarCoordinateSpace.name)
+                .overlayPreferenceValue(PageTabBoundsPreferenceKey.self) { bounds in
+                    PageTabBarIndicator(
+                        bounds: bounds,
+                        pageIDs: state.pages.map(\.id),
+                        position: state.position
+                    )
+                }
+                .onChange(of: selectedIndex) { _, index in
+                    guard let pageID = state.pages[safe: index]?.id else { return }
+                    withAnimation(.snappy) {
+                        proxy.scrollTo(pageID, anchor: .center)
+                    }
+                }
+                .mask {
+                    PageTabBarEdgeMask(
+                        isScrollable: intrinsicWidth > container.size.width,
+                        fadeWidth: horizontalInset,
+                        height: container.size.height
+                    )
+                }
+            }
+        }
+        .background {
+            PageTabBarIntrinsicContent(
+                pages: state.pages,
+                spacing: spacing,
+                horizontalInset: horizontalInset
+            )
+        }
+        .onPreferenceChange(PageTabBarIntrinsicWidthPreferenceKey.self) {
+            intrinsicWidth = $0
+        }
+        .frame(height: 34)
+        .sensoryFeedback(.selection, trigger: selectedIndex)
+    }
+
+    private var selectedIndex: Int {
+        guard !state.pages.isEmpty else { return 0 }
+        return min(state.pages.count - 1, max(0, Int(state.position.rounded())))
+    }
+
+    private func selectionProgress(for index: Int) -> Double {
+        max(0, min(1, 1 - abs(state.position - Double(index))))
     }
 }
 
-extension UICollectionView {
-    package func rowSequence(for section: Int) -> some Sequence<Int> {
-        guard section >= 0, numberOfSections > section else {
-            return (0..<0)
+private struct PageTabBarIntrinsicContent: View {
+    let pages: [Page]
+    let spacing: CGFloat
+    let horizontalInset: CGFloat
+
+    var body: some View {
+        HStack(spacing: spacing) {
+            ForEach(pages) { page in
+                Text(page.title)
+                    .font(.subheadline.weight(.bold))
+                    .lineLimit(1)
+                    .padding(.horizontal, 2)
+            }
         }
-        let numberOfRows = numberOfItems(inSection: section)
-        return (0..<numberOfRows)
+        .fixedSize(horizontal: true, vertical: false)
+        .padding(.horizontal, horizontalInset)
+        .hidden()
+        .background {
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: PageTabBarIntrinsicWidthPreferenceKey.self,
+                    value: proxy.size.width
+                )
+            }
+        }
     }
+}
+
+private struct PageTabBarEdgeMask: View {
+    let isScrollable: Bool
+    let fadeWidth: CGFloat
+    let height: CGFloat
+
+    var body: some View {
+        HStack(spacing: 0) {
+            if isScrollable {
+                LinearGradient(colors: [.clear, .black], startPoint: .leading, endPoint: .trailing)
+                    .frame(width: fadeWidth)
+            }
+            Color.black.frame(maxWidth: .infinity)
+            if isScrollable {
+                LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing)
+                    .frame(width: fadeWidth)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: height)
+    }
+}
+
+private struct PageTabBarIntrinsicWidthPreferenceKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+private struct PageTabBarItem: View {
+    let title: String
+    let pageID: Page.ID
+    let selectionProgress: Double
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(Color.secondary.mix(with: .primary, by: selectionProgress))
+                .lineLimit(1)
+                .padding(.horizontal, 2)
+                .frame(maxHeight: .infinity)
+                .anchorPreference(key: PageTabBoundsPreferenceKey.self, value: .bounds) {
+                    [pageID: $0]
+                }
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct PageTabBoundsPreferenceKey: PreferenceKey {
+    static let defaultValue: [Page.ID: Anchor<CGRect>] = [:]
+    static func reduce(value: inout [Page.ID: Anchor<CGRect>], nextValue: () -> [Page.ID: Anchor<CGRect>]) {
+        value.merge(nextValue(), uniquingKeysWith: { old, _ in old })
+    }
+}
+
+private enum PageTabBarCoordinateSpace {
+    static let name = "Pager.PageTabBar"
+}
+
+private struct PageTabBarIndicator: View {
+    let bounds: [Page.ID: Anchor<CGRect>]
+    let pageIDs: [Page.ID]
+    let position: Double
+
+    var body: some View {
+        GeometryReader { proxy in
+            let frames = pageIDs.compactMap { id in bounds[id].map { proxy[$0] } }
+            let lowerIndex = max(0, min(frames.count - 1, Int(floor(position))))
+            let upperIndex = max(0, min(frames.count - 1, Int(ceil(position))))
+            let progress = position - floor(position)
+            if let start = frames[safe: lowerIndex], let end = frames[safe: upperIndex] {
+                Capsule()
+                    .fill(.tint)
+                    .frame(width: start.width + (end.width - start.width) * progress, height: 2)
+                    .position(
+                        x: start.midX + (end.midX - start.midX) * progress,
+                        y: proxy.size.height - 2
+                    )
+            }
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+private extension Collection {
+    subscript(safe index: Index) -> Element? { indices.contains(index) ? self[index] : nil }
 }

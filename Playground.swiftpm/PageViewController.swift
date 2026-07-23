@@ -24,23 +24,29 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             navigationItem.title = "Pager Example"
         }
 
+        guard let tabBarView = pageTabBar.view else {
+            fatalError("PageTabBarController did not load its view")
+        }
+
         if #available(iOS 26.0, *) {
-            collectionView.superview!.addSubview(pageTabBar)
-            pageTabBar.translatesAutoresizingMaskIntoConstraints = false
+            addChild(pageTabBar)
+            view.addSubview(tabBarView)
+            tabBarView.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
-                pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                tabBarView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                tabBarView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                tabBarView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             ])
-            itemContentInsets.top = pageTabBar.intrinsicContentSize.height
+            pageTabBar.didMove(toParent: self)
+            itemContentInsets.top = tabBarView.intrinsicContentSize.height
 
             let interaction = UIScrollEdgeElementContainerInteraction()
             interaction.scrollView = collectionView
             interaction.edge = .top
-            pageTabBar.addInteraction(interaction)
+            tabBarView.addInteraction(interaction)
             collectionView.topEdgeEffect.style = .hard
-        } else if let palette = NavigationBarPalette(contentView: pageTabBar) {
-            palette.setPreferredHeight(pageTabBar.intrinsicContentSize.height)
+        } else if let palette = NavigationBarPalette(contentView: tabBarView) {
+            palette.setPreferredHeight(tabBarView.intrinsicContentSize.height)
             navigationItem.setBottomPalette(palette)
             itemContentInsets.top = 0
         } else {
