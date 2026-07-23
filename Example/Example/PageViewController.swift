@@ -52,6 +52,11 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             fatalError("UINavigationBarPalette is unavailable")
         }
 
+        setupToolbarItems()
+        updateEditButtonState()
+    }
+    
+    func setupToolbarItems() {
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),
             primaryAction: UIAction { [unowned self] _ in
@@ -92,7 +97,6 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             decrementButton,
             editButton,
         ]
-        updateEditButtonState()
     }
 
     func willTransition(to pendingViewControllers: [UIViewController]) {
