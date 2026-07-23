@@ -51,7 +51,7 @@ public final class NavigationBarPalette {
 
 private enum Strings {
     static let alloc = "alloc"
-    static let navigationBarPalette = "UINavigationBarPalette"
+    static let navigationBarPalette = "_UINavigationBarPalette"
     static let initWithContentView = "initWithContentView:"
     static let setBottomPalette = "_setBottomPalette:"
     static let setPreferredHeight = "setPreferredHeight:"
