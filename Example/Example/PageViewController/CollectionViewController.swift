@@ -1,10 +1,10 @@
 import UIKit
 
-enum Section: Int {
+nonisolated enum Section: Int, Sendable {
     case items
 }
 
-struct Item: Hashable {
+nonisolated struct Item: Hashable, Sendable {
     let id: UUID = UUID()
 }
 

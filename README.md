@@ -23,6 +23,10 @@ dependencies: [
 
 Then add `Pager` to your target dependencies.
 
+## Compatibility note
+
+On iOS 26 and later, the background blur of the navigation bar palette does not work correctly when `UIDesignRequiresCompatibility` is set to `true`. Set it to `false` (or remove the key) to use the palette background blur normally.
+
 ## Quick start
 ```swift
 import Pager
@@ -75,7 +79,7 @@ final class PagesViewController: PageViewController {
 - `PageTabBar`: horizontally scrolling tab bar with an indicator that tracks scroll progress and emits selection haptics.
 
 ## Examples
-Open `Playground.swiftpm` to try the interactive sample (dynamic tab add/remove, table/collection content). The preview GIF in `.github/sample.gif` was captured from this playground.
+Open `Example/Example.xcodeproj` to try the interactive sample (dynamic tab add/remove, table/collection content). The preview GIF in `.github/sample.gif` was captured from this example.
 
 ## Testing
 See `TESTING.md` for running the iOS simulator tests with `xcodebuild`.

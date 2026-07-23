@@ -17,17 +17,13 @@ struct ContentView: UIViewControllerRepresentable {
                     title: "Empty",
                     image: UIImage(systemName: "square.dashed"),
                     identifier: "empty",
-                    viewControllerProvider: { _ in
-                        emptyNav
-                    }
+                    viewControllerProvider: { _ in emptyNav }
                 ),
                 UITab(
                     title: "Seeded",
                     image: UIImage(systemName: "square.stack.3d.up"),
                     identifier: "seeded",
-                    viewControllerProvider: { _ in
-                        seededNav
-                    }
+                    viewControllerProvider: { _ in seededNav }
                 ),
             ]
         )
@@ -37,7 +33,5 @@ struct ContentView: UIViewControllerRepresentable {
         return vc
     }
 
-    func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
-
-    }
+    func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {}
 }

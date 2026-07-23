@@ -142,25 +142,28 @@ open class PageViewController: WorkaroundCollectionViewController {
         snapshot.reconfigureItems(snapshot.itemIdentifiers)
         dataSource.apply(snapshot)
     }
+    
+    func setCurrentContentScrollView() {
+        guard isViewLoaded else { return }
+        guard let indexPath = indexPathForCenterItem else { return }
+        let contentViewController = pages[indexPath.row].viewController
+        let contentScrollView = contentViewController.contentScrollView(for: .top) ?? contentViewController.rootScrollView
+        setContentScrollView(contentScrollView, for: .top)
+    }
 
     open override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        setCurrentContentScrollView()
         update(percentComplete)
     }
-
-    open override func contentScrollView(for edge: NSDirectionalRectEdge) -> UIScrollView? {
-        guard isViewLoaded else { return nil }
-        guard let indexPath = indexPathForCenterItem else { return nil }
-        let contentViewController = pages[indexPath.row].viewController
-        let contentScrollView = contentViewController.contentScrollView(for: edge)
-        return contentScrollView ?? contentViewController.rootScrollView
-    }
-
+    
     open override func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        setCurrentContentScrollView()
         delegate?.didFinishTransition(self)
     }
 
     open override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        setCurrentContentScrollView()
         delegate?.didFinishTransition(self)
     }
 
