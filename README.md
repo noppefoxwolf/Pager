@@ -7,10 +7,10 @@ UIKit pager view controller with a scroll-synced tab bar and indicator, built on
 ## Features
 - Host any `UIViewController` per page via `Page` providers; works inside navigation or tab stacks.
 - Scroll-synced tab bar whose indicator width follows the current label; optional selection haptics.
-- Programmatic or observed selection through `selectedPage` with safe pre-load application.
+- Shared tab bar state through `PageViewController.state`, including page titles and transition progress.
 - Safe rotation/resizing: keeps the current page and indicator aligned on size changes.
 - Customizable content insets per page (`itemContentInsets`) for floating headers / safe areas.
-- Targets iOS 17+ and visionOS 1+ (Swift tools 6.2).
+- Targets iOS 18+ and visionOS 2+ (Swift tools 6.2).
 
 ## Installation (Swift Package Manager)
 Add the package to Xcode or your `Package.swift`:
@@ -36,6 +36,8 @@ final class PagesViewController: PageViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        let pageTabBar = PageTabBar(state: state)
+
         pages = [
             Page(id: "home", title: "Home") { page in
                 UIHostingController(rootView: Text(page.title))
@@ -45,16 +47,14 @@ final class PagesViewController: PageViewController {
             }
         ]
 
-        // Programmatically select a page (can be set before view loads)
-        selectedPage = pages.first
-
-        // Place the tab bar beneath the navigation bar
+        // Build the tab bar from the pager's shared state.
+        // Place it beneath the navigation bar.
         let interaction = UIScrollEdgeElementContainerInteraction()
         interaction.scrollView = collectionView
         interaction.edge = .top
         pageTabBar.addInteraction(interaction)
 
-        collectionView.superview?.addSubview(pageTabBar)
+        view.addSubview(pageTabBar)
         pageTabBar.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -69,12 +69,13 @@ final class PagesViewController: PageViewController {
 }
 ```
 
-`pages` can be updated at runtime (append/remove) and the pager refreshes automatically through diffable data sources; `selectedPage` tracks the visible page and can be set to jump.
+`pages` can be updated at runtime (append/remove) and the pager refreshes automatically through diffable data sources. The pager updates `state.position` while scrolling, and selecting a tab through `PageTabBar` scrolls the pager to the corresponding page.
 
 ## Key types
-- `PageViewController`: horizontally paged collection view controller exposing `pages`, `selectedPage`, `pageTabBar`, `itemContentInsets`, and `reloadData()`.
+- `PageViewController`: horizontally paged collection view controller exposing `pages`, `state`, `itemContentInsets`, and `reloadData()`.
 - `Page`: page descriptor containing `id`, `title`, and a `viewControllerProvider`.
-- `PageTabBar`: horizontally scrolling tab bar with an indicator that tracks scroll progress and emits selection haptics.
+- `PageTabBar`: UIKit `UIView & UIContentView` wrapping the SwiftUI tab bar; initialize it with `PageViewController.state`.
+- `PageTabBarState`: shared observable state used by `PageViewController` and `PageTabBar`.
 
 ## Examples
 Open `Example/Example.xcodeproj` to try the interactive sample (dynamic tab add/remove, table/collection content). The preview GIF in `.github/sample.gif` was captured from this example.

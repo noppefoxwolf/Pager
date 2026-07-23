@@ -2,8 +2,10 @@ import Pager
 import UIKit
 import os
 
-final class PageViewController: Pager.PageViewController, Pager.PageViewControllerDelegate {
+final class PageTabBarViewController: Pager.PageViewController, Pager.PageViewControllerDelegate {
 
+    lazy var pageTabBar = PageTabBar(state: state)
+    
     let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
         category: #file
@@ -21,30 +23,41 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
 
         delegate = self
         navigationItem.title = "Pager Example"
-
+        
+        setupPalette()
+        setupToolbarItems()
+        updateEditButtonState()
+    }
+    
+    func setupPalette() {
         if #available(iOS 26.0, *) {
-            collectionView.superview!.addSubview(pageTabBar)
-            pageTabBar.translatesAutoresizingMaskIntoConstraints = false
+            let containerView = ScrollEdgeElementContainerView(content: pageTabBar)
+            view.addSubview(containerView)
+            containerView.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
-                pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             ])
-            itemContentInsets.top = pageTabBar.intrinsicContentSize.height
+            itemContentInsets.top = containerView.intrinsicContentSize.height
 
             let interaction = UIScrollEdgeElementContainerInteraction()
             interaction.scrollView = collectionView
             interaction.edge = .top
-            pageTabBar.addInteraction(interaction)
+            containerView.addInteraction(interaction)
             collectionView.topEdgeEffect.style = .hard
-        } else if let palette = NavigationBarPalette(contentView: pageTabBar) {
-            palette.setPreferredHeight(pageTabBar.intrinsicContentSize.height)
-            navigationItem.setBottomPalette(palette)
-            itemContentInsets.top = 0
         } else {
-            fatalError("UINavigationBarPalette is unavailable")
+            if let palette = NavigationBarPalette(contentView: pageTabBar) {
+                palette.setPreferredHeight(pageTabBar.intrinsicContentSize.height)
+                navigationItem.setBottomPalette(palette)
+                itemContentInsets.top = 0
+            } else {
+                fatalError("UINavigationBarPalette is unavailable")
+            }
         }
-
+    }
+    
+    func setupToolbarItems() {
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),
             primaryAction: UIAction { [unowned self] _ in
@@ -85,7 +98,6 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             decrementButton,
             editButton,
         ]
-        updateEditButtonState()
     }
 
     func willTransition(to pendingViewControllers: [UIViewController]) {
@@ -97,7 +109,7 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
     }
 }
 
-extension PageViewController {
+extension PageTabBarViewController {
     fileprivate var currentPageIndex: Int? {
         let width = collectionView.bounds.width
         guard width > 0 else { return nil }
@@ -157,7 +169,7 @@ extension PageViewController {
     }
 }
 
-extension PageViewController {
+extension PageTabBarViewController {
     static func seededPages() -> [Page] {
         [
             Page(
