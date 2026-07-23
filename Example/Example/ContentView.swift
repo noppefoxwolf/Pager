@@ -27,9 +27,11 @@ struct ContentView: UIViewControllerRepresentable {
                 ),
             ]
         )
+        #if os(iOS)
         if #available(iOS 26.0, *) {
             vc.tabBarMinimizeBehavior = .onScrollDown
         }
+        #endif
         return vc
     }
 

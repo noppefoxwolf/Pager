@@ -73,7 +73,7 @@ struct PageTabBarView: View {
             intrinsicWidth = $0
         }
         .frame(height: 34)
-        .sensoryFeedback(.selection, trigger: selectedIndex)
+        .sensorySelectionFeedback(trigger: selectedIndex)
     }
 
     private var selectedIndex: Int {
@@ -83,6 +83,17 @@ struct PageTabBarView: View {
 
     private func selectionProgress(for index: Int) -> Double {
         max(0, min(1, 1 - abs(state.position - Double(index))))
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func sensorySelectionFeedback<T: Equatable>(trigger: T) -> some View {
+        if #available(iOS 17.0, visionOS 26.0, *) {
+            sensoryFeedback(.selection, trigger: trigger)
+        } else {
+            self
+        }
     }
 }
 
