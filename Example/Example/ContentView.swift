@@ -2,10 +2,10 @@ import SwiftUI
 
 struct ContentView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> some UIViewController {
-        let emptyPager = PageViewController(pages: [])
+        let emptyPager = PageTabBarViewController(pages: [])
         emptyPager.title = "Empty Pages"
 
-        let seededPager = PageViewController(pages: PageViewController.seededPages())
+        let seededPager = PageTabBarViewController(pages: PageTabBarViewController.seededPages())
         seededPager.title = "Seeded Pages"
 
         let emptyNav = UINavigationController(rootViewController: emptyPager)

@@ -1,11 +1,9 @@
 import UIKit
-import SwiftUI
 import ViewControllerContentConfiguration
 import os
 
 open class PageViewController: WorkaroundCollectionViewController {
-    public let pageTabBar: UIView & UIContentView
-    private let pageTabBarState: PageTabBarState
+    public let state: PageTabBarState
 
     lazy var dataSource = UICollectionViewDiffableDataSource<Section, Page.ID>(
         collectionView: collectionView,
@@ -33,9 +31,9 @@ open class PageViewController: WorkaroundCollectionViewController {
     public var pages: [Page] = [] {
         didSet {
             pagesByID = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, $0) })
-            pageTabBarState.pages = pages
-            pageTabBarState.position = min(
-                pageTabBarState.position,
+            state.pages = pages
+            state.position = min(
+                state.position,
                 Double(max(0, pages.count - 1))
             )
             reloadData()
@@ -45,14 +43,9 @@ open class PageViewController: WorkaroundCollectionViewController {
     // TODO: setPages
 
     public init(pages: [Page] = []) {
-        let pageTabBarState = PageTabBarState()
-        pageTabBarState.pages = pages
-        self.pageTabBarState = pageTabBarState
-        self.pageTabBar = UIHostingConfiguration {
-            PageTabBar()
-                .environment(pageTabBarState)
-        }
-        .makeContentView()
+        let state = PageTabBarState()
+        state.pages = pages
+        self.state = state
         self.pages = pages
         super.init(collectionViewLayout: .paging())
     }
@@ -71,14 +64,12 @@ open class PageViewController: WorkaroundCollectionViewController {
         collectionView.contentInsetAdjustmentBehavior = .never
         _ = cellRegistration
         
-        pageTabBar.layoutMargins = .zero
-        pageTabBar.preservesSuperviewLayoutMargins = false
     }
 
     open override func viewDidLoad() {
         super.viewDidLoad()
 
-        pageTabBarState.onSelect = { [weak self] index in
+        state.onSelect = { [weak self] index in
             self?.selectPage(at: index)
         }
     }
@@ -130,7 +121,7 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
 
     func update(_ percentComplete: Double) {
-        pageTabBarState.position = min(
+        state.position = min(
             Double(max(0, pages.count - 1)),
             max(0, percentComplete)
         )

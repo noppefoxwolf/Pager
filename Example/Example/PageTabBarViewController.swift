@@ -2,8 +2,10 @@ import Pager
 import UIKit
 import os
 
-final class PageViewController: Pager.PageViewController, Pager.PageViewControllerDelegate {
+final class PageTabBarViewController: Pager.PageViewController, Pager.PageViewControllerDelegate {
 
+    lazy var pageTabBar = PageTabBar(state: state)
+    
     let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
         category: #file
@@ -107,7 +109,7 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
     }
 }
 
-extension PageViewController {
+extension PageTabBarViewController {
     fileprivate var currentPageIndex: Int? {
         let width = collectionView.bounds.width
         guard width > 0 else { return nil }
@@ -167,7 +169,7 @@ extension PageViewController {
     }
 }
 
-extension PageViewController {
+extension PageTabBarViewController {
     static func seededPages() -> [Page] {
         [
             Page(

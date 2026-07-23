@@ -36,6 +36,8 @@ final class PagesViewController: PageViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        let pageTabBar = PageTabBar(state: state)
+
         pages = [
             Page(id: "home", title: "Home") { page in
                 UIHostingController(rootView: Text(page.title))
@@ -72,9 +74,8 @@ final class PagesViewController: PageViewController {
 `pages` can be updated at runtime (append/remove) and the pager refreshes automatically through diffable data sources; `selectedPage` tracks the visible page and can be set to jump.
 
 ## Key types
-- `PageViewController`: horizontally paged collection view controller exposing `pages`, `selectedPage`, `pageTabBar`, `itemContentInsets`, and `reloadData()`.
+- `PageViewController`: horizontally paged collection view controller exposing `pages`, `state`, `itemContentInsets`, and `reloadData()`.
 - `Page`: page descriptor containing `id`, `title`, and a `viewControllerProvider`.
-- `pageTabBar`: the `UIView & UIContentView` created from the SwiftUI tab bar.
 
 ## Examples
 Open `Example/Example.xcodeproj` to try the interactive sample (dynamic tab add/remove, table/collection content). The preview GIF in `.github/sample.gif` was captured from this example.
