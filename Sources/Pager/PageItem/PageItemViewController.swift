@@ -3,16 +3,16 @@ import UIKit
 // workaround: 直接additionalSafeAreaInsetsを触らないようにするために、PageItemViewControllerを噛ませる
 final class PageItemViewController: UIViewController {
     let viewController: UIViewController
-    
+
     init(viewController: UIViewController) {
         self.viewController = viewController
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func loadView() {
         super.loadView()
         addChild(viewController)
@@ -26,7 +26,7 @@ final class PageItemViewController: UIViewController {
             view.rightAnchor.constraint(equalTo: viewController.view.rightAnchor),
         ])
     }
-    
+
     override func contentScrollView(for edge: NSDirectionalRectEdge) -> UIScrollView? {
         guard isViewLoaded else { return nil }
         guard viewController.isViewLoaded else { return nil }

@@ -2,7 +2,7 @@ import UIKit
 
 package final class LabelContentView: UIView, UIContentView {
     package let label = UILabel()
-    
+
     package var configuration: UIContentConfiguration {
         didSet {
             configure(configuration: configuration)
@@ -37,14 +37,19 @@ package final class LabelContentView: UIView, UIContentView {
     func configure(configuration: UIContentConfiguration) {
         guard let configuration = configuration as? LabelContentConfiguration else { return }
         var attributeContainer = AttributeContainer()
-        
-        let descriptor = UIFontDescriptor
+
+        let descriptor =
+            UIFontDescriptor
             .preferredFontDescriptor(withTextStyle: .subheadline)
             .withSymbolicTraits(.traitBold)!
         attributeContainer.font = UIFont(descriptor: descriptor, size: 0)
         attributeContainer.foregroundColor = UIColor.label
-        let transformedContainer = configuration.textProperties?.transform(attributeContainer) ?? attributeContainer
-        let attributedString = AttributedString(configuration.text, attributes: transformedContainer)
+        let transformedContainer =
+            configuration.textProperties?.transform(attributeContainer) ?? attributeContainer
+        let attributedString = AttributedString(
+            configuration.text,
+            attributes: transformedContainer
+        )
         label.attributedText = NSAttributedString(attributedString)
     }
 }

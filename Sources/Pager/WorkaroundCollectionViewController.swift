@@ -3,16 +3,19 @@ import UIKit
 open class WorkaroundCollectionViewController: CollectionViewController {
     // workaround: Adjust contentOffset after rotation
     // See also: https://stackoverflow.com/a/43322706
-    open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+    open override func viewWillTransition(
+        to size: CGSize,
+        with coordinator: UIViewControllerTransitionCoordinator
+    ) {
         super.viewWillTransition(to: size, with: coordinator)
-        
+
         let offset = collectionView.contentOffset
         let width = collectionView.bounds.size.width
-        
+
         guard width > 0 else { return }
         let index = round(offset.x / width)
         guard index.isNormal else { return }
-        
+
         let newOffset = CGPoint(x: index * size.width, y: offset.y)
         coordinator.animate(
             alongsideTransition: { [weak collectionView] (context) in
@@ -67,13 +70,13 @@ open class CollectionViewController: UIViewController, UICollectionViewDelegate 
     open func scrollViewDidScroll(_ scrollView: UIScrollView) {
 
     }
-    
+
     open func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
     }
-    
+
     open func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
     }
-    
+
     open func collectionView(
         _ collectionView: UICollectionView,
         willDisplay cell: UICollectionViewCell,

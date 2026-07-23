@@ -1,9 +1,9 @@
-import UIKit
 import Pager
+import UIKit
 import os
 
 final class PageViewController: Pager.PageViewController, Pager.PageViewControllerDelegate {
-    
+
     let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
         category: #file
@@ -15,15 +15,15 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             presentTitleEditor()
         }
     )
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         delegate = self
         if navigationItem.title == nil {
             navigationItem.title = "Pager Example"
         }
-        
+
         if #available(iOS 26.0, *) {
             collectionView.superview!.addSubview(pageTabBar)
             pageTabBar.translatesAutoresizingMaskIntoConstraints = false
@@ -46,7 +46,7 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
         } else {
             fatalError("UINavigationBarPalette is unavailable")
         }
-        
+
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),
             primaryAction: UIAction { [unowned self] _ in
@@ -81,7 +81,7 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
                 updateEditButtonState()
             }
         )
-        
+
         navigationItem.rightBarButtonItems = [
             incrementButton,
             decrementButton,
@@ -89,18 +89,18 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
         ]
         updateEditButtonState()
     }
-    
+
     func willTransition(to pendingViewControllers: [UIViewController]) {
         logger.debug("willTransition: \(pendingViewControllers.compactMap(\.title))")
     }
-    
+
     func didFinishTransition(_ pageViewController: Pager.PageViewController) {
         logger.debug("didFinishTransition")
     }
 }
 
-private extension PageViewController {
-    var currentPageIndex: Int? {
+extension PageViewController {
+    fileprivate var currentPageIndex: Int? {
         let width = collectionView.bounds.width
         guard width > 0 else { return nil }
         let value = collectionView.contentOffset.x / width
@@ -108,34 +108,38 @@ private extension PageViewController {
         let index = Int(value.rounded())
         return pages.indices.contains(index) ? index : nil
     }
-    
-    func updateEditButtonState() {
+
+    fileprivate func updateEditButtonState() {
         editButton.isEnabled = !pages.isEmpty
     }
-    
-    func presentTitleEditor() {
+
+    fileprivate func presentTitleEditor() {
         guard let index = currentPageIndex else { return }
         let page = pages[index]
-        
+
         let alert = UIAlertController(title: "Edit Title", message: nil, preferredStyle: .alert)
         alert.addTextField { textField in
             textField.text = page.title
             textField.clearButtonMode = .whileEditing
         }
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak self, weak alert] _ in
-            guard let self else { return }
-            let newTitle = alert?.textFields?.first?.text?.trimmingCharacters(
-                in: .whitespacesAndNewlines
-            ) ?? ""
-            guard !newTitle.isEmpty else { return }
-            updatePageTitle(at: index, title: newTitle)
-        })
-        
+        alert.addAction(
+            UIAlertAction(title: "Save", style: .default) { [weak self, weak alert] _ in
+                guard let self else { return }
+                let newTitle =
+                    alert?.textFields?.first?.text?
+                    .trimmingCharacters(
+                        in: .whitespacesAndNewlines
+                    ) ?? ""
+                guard !newTitle.isEmpty else { return }
+                updatePageTitle(at: index, title: newTitle)
+            }
+        )
+
         present(alert, animated: true)
     }
-    
-    func updatePageTitle(at index: Int, title: String) {
+
+    fileprivate func updatePageTitle(at index: Int, title: String) {
         guard pages.indices.contains(index) else { return }
         let page = pages[index]
         let viewController = page.viewController
@@ -143,7 +147,7 @@ private extension PageViewController {
         if let childViewController = viewController as? ChildViewController {
             childViewController.label.text = title
         }
-        
+
         let updatedPage = Page(
             id: page.id,
             title: title,

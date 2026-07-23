@@ -4,13 +4,13 @@ struct ContentView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> some UIViewController {
         let emptyPager = PageViewController(pages: [])
         emptyPager.title = "Empty Pages"
-        
+
         let seededPager = PageViewController(pages: PageViewController.seededPages())
         seededPager.title = "Seeded Pages"
-        
+
         let emptyNav = UINavigationController(rootViewController: emptyPager)
         let seededNav = UINavigationController(rootViewController: seededPager)
-        
+
         let vc = UITabBarController(
             tabs: [
                 UITab(
@@ -28,7 +28,7 @@ struct ContentView: UIViewControllerRepresentable {
                     viewControllerProvider: { _ in
                         seededNav
                     }
-                )
+                ),
             ]
         )
         if #available(iOS 26.0, *) {
@@ -36,8 +36,8 @@ struct ContentView: UIViewControllerRepresentable {
         }
         return vc
     }
-    
+
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
-        
+
     }
 }

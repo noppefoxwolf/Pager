@@ -9,7 +9,7 @@ final class ViewControllerContentView: UIView, UIContentView {
             )
         }
     }
-    
+
     var ownConfiguration: ViewControllerContentConfiguration {
         configuration as! ViewControllerContentConfiguration
     }
@@ -22,7 +22,7 @@ final class ViewControllerContentView: UIView, UIContentView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
         if newSuperview != nil {
@@ -41,13 +41,13 @@ final class ViewControllerContentView: UIView, UIContentView {
             configuration.viewController.view.removeFromSuperview()
             configuration.viewController.removeFromParent()
         }
-        
+
         if let configuration = newConfiguration as? ViewControllerContentConfiguration {
             let contentView = configuration.viewController.view!
             contentView.translatesAutoresizingMaskIntoConstraints = false
-            
+
             configuration.parent?.addChild(configuration.viewController)
-            
+
             addSubview(configuration.viewController.view)
             NSLayoutConstraint.activate(
                 [
@@ -67,4 +67,3 @@ final class ViewControllerContentView: UIView, UIContentView {
         }
     }
 }
-

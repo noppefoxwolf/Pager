@@ -1,5 +1,5 @@
-import UIKit
 import SwiftUI
+import UIKit
 
 final class TableViewController: UITableViewController {
     lazy var dataSource = UITableViewDiffableDataSource<Section, Item>(
@@ -12,19 +12,19 @@ final class TableViewController: UITableViewController {
             return cell
         }
     )
-    
+
     var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         _ = dataSource
-        
+
         snapshot.appendSections([.items])
         snapshot.appendItems((0..<100).map({ _ in Item() }), toSection: .items)
-        
+
         dataSource.apply(snapshot)
-        
+
     }
 }

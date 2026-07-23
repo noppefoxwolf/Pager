@@ -10,7 +10,7 @@ let package = Package(
         .library(
             name: "Pager",
             targets: ["Pager"]
-        ),
+        )
     ],
     dependencies: [
         .package(

@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Pager
 
 final class PagerTests: XCTestCase {

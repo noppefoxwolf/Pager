@@ -5,9 +5,9 @@ public final class Page: Identifiable {
     public let id: String
     public let title: String
     public let viewControllerProvider: @MainActor @Sendable (Page) -> UIViewController
-    
+
     private var _viewController: UIViewController? = nil
-    
+
     @MainActor
     public var viewController: UIViewController {
         if let _viewController {
@@ -17,7 +17,7 @@ public final class Page: Identifiable {
         _viewController = newViewController
         return newViewController
     }
-    
+
     public init(
         id: String,
         title: String,

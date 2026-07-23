@@ -15,7 +15,7 @@ final class PageTabBarIndicatorView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        
+
         if #unavailable(iOS 26.0) {
             layer.cornerRadius = bounds.height / 2
         }
