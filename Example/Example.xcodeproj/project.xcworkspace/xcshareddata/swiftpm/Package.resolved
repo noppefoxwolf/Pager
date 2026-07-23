@@ -1,0 +1,15 @@
+{
+  "originHash" : "e0caa19241b657f372d943f76d703b59e02a56c315053661a8ff5648c5c87c60",
+  "pins" : [
+    {
+      "identity" : "collectionviewdistributionallayout",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/noppefoxwolf/CollectionViewDistributionalLayout",
+      "state" : {
+        "revision" : "060ec569fcb8d2ee8e254f5d60e417e99f2f708f",
+        "version" : "0.0.7"
+      }
+    }
+  ],
+  "version" : 3
+}

@@ -27,21 +27,22 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
         }
 
         if #available(iOS 26.0, *) {
+            let containerView = ScrollEdgeElementContainerView(content: pageTabBar.view)
             addChild(pageTabBar)
-            view.addSubview(tabBarView)
-            tabBarView.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(containerView)
+            containerView.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
-                tabBarView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                tabBarView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                tabBarView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             ])
             pageTabBar.didMove(toParent: self)
-            itemContentInsets.top = tabBarView.intrinsicContentSize.height
+            itemContentInsets.top = containerView.intrinsicContentSize.height
 
             let interaction = UIScrollEdgeElementContainerInteraction()
             interaction.scrollView = collectionView
             interaction.edge = .top
-            tabBarView.addInteraction(interaction)
+            containerView.addInteraction(interaction)
             collectionView.topEdgeEffect.style = .hard
         } else if let palette = NavigationBarPalette(contentView: tabBarView) {
             palette.setPreferredHeight(tabBarView.intrinsicContentSize.height)
@@ -190,3 +191,4 @@ extension PageViewController {
         ]
     }
 }
+
