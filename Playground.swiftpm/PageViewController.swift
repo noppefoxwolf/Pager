@@ -20,9 +20,7 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
         super.viewDidLoad()
 
         delegate = self
-        if navigationItem.title == nil {
-            navigationItem.title = "Pager Example"
-        }
+        navigationItem.title = "Pager Example"
 
         if #available(iOS 26.0, *) {
             collectionView.superview!.addSubview(pageTabBar)
