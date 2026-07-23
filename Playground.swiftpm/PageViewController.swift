@@ -24,20 +24,28 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             navigationItem.title = "Pager Example"
         }
         
-        let interaction = UIScrollEdgeElementContainerInteraction()
-        interaction.scrollView = collectionView
-        interaction.edge = .top
-        pageTabBar.addInteraction(interaction)
-        collectionView.superview!.addSubview(pageTabBar)
-        pageTabBar.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-        ])
-        
-        collectionView.topEdgeEffect.style = .hard
-        itemContentInsets.top = pageTabBar.intrinsicContentSize.height
+        if #available(iOS 26.0, *) {
+            collectionView.superview!.addSubview(pageTabBar)
+            pageTabBar.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                pageTabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                pageTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                pageTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            ])
+            itemContentInsets.top = pageTabBar.intrinsicContentSize.height
+
+            let interaction = UIScrollEdgeElementContainerInteraction()
+            interaction.scrollView = collectionView
+            interaction.edge = .top
+            pageTabBar.addInteraction(interaction)
+            collectionView.topEdgeEffect.style = .hard
+        } else if let palette = NavigationBarPalette(contentView: pageTabBar) {
+            palette.setPreferredHeight(pageTabBar.intrinsicContentSize.height)
+            navigationItem.setBottomPalette(palette)
+            itemContentInsets.top = 0
+        } else {
+            fatalError("UINavigationBarPalette is unavailable")
+        }
         
         let decrementButton = UIBarButtonItem(
             image: UIImage(systemName: "minus"),
