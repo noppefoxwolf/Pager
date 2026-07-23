@@ -2,7 +2,10 @@ import UIKit
 
 @available(iOS 26.0, *)
 final class ScrollEdgeElementContainerView<View: UIView>: UILabel {
+    let content: View
+    
     init(content: View) {
+        self.content = content
         super.init(frame: .zero)
         
         textColor = .clear
@@ -20,5 +23,9 @@ final class ScrollEdgeElementContainerView<View: UIView>: UILabel {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override var intrinsicContentSize: CGSize {
+        content.intrinsicContentSize
     }
 }
