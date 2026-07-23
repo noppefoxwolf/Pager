@@ -2,14 +2,15 @@ import SwiftUI
 import UIKit
 
 @MainActor
-public protocol PageTabBarControllerDelegate: AnyObject {
-    func pageTabBarController(_ controller: PageTabBarController, didSelect page: Page)
+public protocol PageTabBarContentViewDelegate: AnyObject {
+    func pageTabBarContentView(_ contentView: PageTabBarContentView, didSelect page: Page)
 }
 
-/// UIKit container for embedding the SwiftUI `PageTabBar` in existing controllers.
+/// A UIKit content view embedding the SwiftUI `PageTabBar`.
 @MainActor
-open class PageTabBarController: UIViewController {
-    public weak var delegate: (any PageTabBarControllerDelegate)?
+public final class PageTabBarContentView: UIView, UIContentView {
+    public weak var delegate: (any PageTabBarContentViewDelegate)?
+
     public var pages: [Page] = [] {
         didSet {
             state.pages = pages
@@ -33,8 +34,10 @@ open class PageTabBarController: UIViewController {
         state.position = min(maxPosition, max(0, progress))
     }
 
+    public var configuration: UIContentConfiguration
+
     private let state: PageTabBarState
-    private let hostingController: UIHostingController<PageTabBar>
+    private let hostedContentView: UIView & UIContentView
     private var maxPosition: Double { Double(max(0, pages.count - 1)) }
     private var clampedPosition: Double { min(maxPosition, max(0, state.position)) }
     private var selectedIndex: Int? {
@@ -46,42 +49,34 @@ open class PageTabBarController: UIViewController {
         let state = PageTabBarState()
         state.pages = pages
         self.state = state
-        hostingController = UIHostingController(rootView: PageTabBar(state: state))
-        super.init(nibName: nil, bundle: nil)
-        self.pages = pages
-        hostingController.safeAreaRegions = []
-        hostingController.view.backgroundColor = .clear
+        self.hostedContentView = UIHostingConfiguration {
+            PageTabBar(state: state)
+        }
+        .makeContentView()
+        self.configuration = hostedContentView.configuration
+        super.init(frame: .zero)
+
+        backgroundColor = .clear
+        hostedContentView.backgroundColor = .clear
+        hostedContentView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(hostedContentView)
+        NSLayoutConstraint.activate([
+            hostedContentView.topAnchor.constraint(equalTo: topAnchor),
+            hostedContentView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            hostedContentView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            hostedContentView.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
+
+        state.onSelect = { [weak self] index in
+            guard let self, self.pages.indices.contains(index) else { return }
+            self.delegate?.pageTabBarContentView(self, didSelect: self.pages[index])
+        }
     }
 
     @available(*, unavailable)
     public required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    open override func loadView() {
-        view = PageTabBarControllerView()
-        view.backgroundColor = .clear
-    }
-
-    open override func viewDidLoad() {
-        super.viewDidLoad()
-        addChild(hostingController)
-        view.addSubview(hostingController.view)
-        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
-            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-        ])
-        hostingController.didMove(toParent: self)
-        state.onSelect = { [weak self] index in
-            guard let self, self.pages.indices.contains(index) else { return }
-            self.delegate?.pageTabBarController(self, didSelect: self.pages[index])
-        }
-    }
-}
-
-private final class PageTabBarControllerView: UIView {
-    override var intrinsicContentSize: CGSize {
+    public override var intrinsicContentSize: CGSize {
         CGSize(width: UIView.noIntrinsicMetric, height: 34)
     }
 }

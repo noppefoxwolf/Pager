@@ -3,7 +3,7 @@ import ViewControllerContentConfiguration
 import os
 
 open class PageViewController: WorkaroundCollectionViewController {
-    public let pageTabBar = PageTabBarController()
+    public let pageTabBar = PageTabBarContentView()
 
     lazy var dataSource = UICollectionViewDiffableDataSource<Section, Page.ID>(
         collectionView: collectionView,
@@ -176,8 +176,8 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
 }
 
-extension PageViewController: PageTabBarControllerDelegate {
-    public func pageTabBarController(_ controller: PageTabBarController, didSelect page: Page) {
+extension PageViewController: PageTabBarContentViewDelegate {
+    public func pageTabBarContentView(_ contentView: PageTabBarContentView, didSelect page: Page) {
         guard let index = pages.firstIndex(where: { $0.id == page.id }) else { return }
         collectionView.scrollToItem(
             at: IndexPath(row: index, section: 0),

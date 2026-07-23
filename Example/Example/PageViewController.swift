@@ -29,8 +29,7 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
     
     func setupPalette() {
         if #available(iOS 26.0, *) {
-            let containerView = ScrollEdgeElementContainerView(content: pageTabBar.view)
-            addChild(pageTabBar)
+            let containerView = ScrollEdgeElementContainerView(content: pageTabBar)
             view.addSubview(containerView)
             containerView.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
@@ -38,7 +37,6 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
                 containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             ])
-            pageTabBar.didMove(toParent: self)
             itemContentInsets.top = containerView.intrinsicContentSize.height
 
             let interaction = UIScrollEdgeElementContainerInteraction()
@@ -47,8 +45,8 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             containerView.addInteraction(interaction)
             collectionView.topEdgeEffect.style = .hard
         } else {
-            if let palette = NavigationBarPalette(contentView: pageTabBar.view) {
-                palette.setPreferredHeight(pageTabBar.view.intrinsicContentSize.height)
+            if let palette = NavigationBarPalette(contentView: pageTabBar) {
+                palette.setPreferredHeight(pageTabBar.intrinsicContentSize.height)
                 navigationItem.setBottomPalette(palette)
                 itemContentInsets.top = 0
             } else {
@@ -196,4 +194,3 @@ extension PageViewController {
         ]
     }
 }
-
