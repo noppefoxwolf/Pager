@@ -13,26 +13,12 @@ final class PageTabBarState {
 /// A horizontally scrolling page selector whose indicator follows transition progress.
 @MainActor
 public struct PageTabBar: View {
-    private let state: PageTabBarState
+    @Environment(PageTabBarState.self) private var state
     private let spacing: CGFloat = 10
     private let horizontalInset: CGFloat = 20
     @State private var intrinsicWidth: CGFloat = 0
 
-    public init(
-        pages: [Page],
-        position: Double = 0,
-        onSelect: @escaping (Int) -> Void
-    ) {
-        let state = PageTabBarState()
-        state.pages = pages
-        state.position = position
-        state.onSelect = onSelect
-        self.state = state
-    }
-
-    init(state: PageTabBarState) {
-        self.state = state
-    }
+    init() {}
 
     public var body: some View {
         GeometryReader { container in

@@ -74,7 +74,7 @@ final class PagesViewController: PageViewController {
 ## Key types
 - `PageViewController`: horizontally paged collection view controller exposing `pages`, `selectedPage`, `pageTabBar`, `itemContentInsets`, and `reloadData()`.
 - `Page`: page descriptor containing `id`, `title`, and a `viewControllerProvider`.
-- `PageTabBarContentView`: UIKit `UIView & UIContentView` embedding the horizontally scrolling SwiftUI tab bar.
+- `pageTabBar`: the `UIView & UIContentView` created from the SwiftUI tab bar.
 
 ## Examples
 Open `Example/Example.xcodeproj` to try the interactive sample (dynamic tab add/remove, table/collection content). The preview GIF in `.github/sample.gif` was captured from this example.

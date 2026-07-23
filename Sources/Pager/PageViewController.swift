@@ -1,9 +1,11 @@
 import UIKit
+import SwiftUI
 import ViewControllerContentConfiguration
 import os
 
 open class PageViewController: WorkaroundCollectionViewController {
-    public let pageTabBar = PageTabBarContentView()
+    public let pageTabBar: UIView & UIContentView
+    private let pageTabBarState: PageTabBarState
 
     lazy var dataSource = UICollectionViewDiffableDataSource<Section, Page.ID>(
         collectionView: collectionView,
@@ -31,7 +33,11 @@ open class PageViewController: WorkaroundCollectionViewController {
     public var pages: [Page] = [] {
         didSet {
             pagesByID = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, $0) })
-            pageTabBar.pages = pages
+            pageTabBarState.pages = pages
+            pageTabBarState.position = min(
+                pageTabBarState.position,
+                Double(max(0, pages.count - 1))
+            )
             reloadData()
         }
     }
@@ -39,9 +45,16 @@ open class PageViewController: WorkaroundCollectionViewController {
     // TODO: setPages
 
     public init(pages: [Page] = []) {
+        let pageTabBarState = PageTabBarState()
+        pageTabBarState.pages = pages
+        self.pageTabBarState = pageTabBarState
+        self.pageTabBar = UIHostingConfiguration {
+            PageTabBar()
+                .environment(pageTabBarState)
+        }
+        .makeContentView()
         self.pages = pages
         super.init(collectionViewLayout: .paging())
-        pageTabBar.pages = pages
     }
 
     @MainActor required public init?(coder: NSCoder) {
@@ -57,12 +70,17 @@ open class PageViewController: WorkaroundCollectionViewController {
         collectionView.bounces = false
         collectionView.contentInsetAdjustmentBehavior = .never
         _ = cellRegistration
+        
+        pageTabBar.layoutMargins = .zero
+        pageTabBar.preservesSuperviewLayoutMargins = false
     }
 
     open override func viewDidLoad() {
         super.viewDidLoad()
 
-        pageTabBar.delegate = self
+        pageTabBarState.onSelect = { [weak self] index in
+            self?.selectPage(at: index)
+        }
     }
 
     open override func viewIsAppearing(_ animated: Bool) {
@@ -112,7 +130,10 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
 
     func update(_ percentComplete: Double) {
-        pageTabBar.setTransitionProgress(percentComplete)
+        pageTabBarState.position = min(
+            Double(max(0, pages.count - 1)),
+            max(0, percentComplete)
+        )
     }
 
     @MainActor
@@ -176,9 +197,9 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
 }
 
-extension PageViewController: PageTabBarContentViewDelegate {
-    public func pageTabBarContentView(_ contentView: PageTabBarContentView, didSelect page: Page) {
-        guard let index = pages.firstIndex(where: { $0.id == page.id }) else { return }
+private extension PageViewController {
+    func selectPage(at index: Int) {
+        guard pages.indices.contains(index) else { return }
         collectionView.scrollToItem(
             at: IndexPath(row: index, section: 0),
             at: .centeredHorizontally,
