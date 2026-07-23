@@ -21,11 +21,13 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
 
         delegate = self
         navigationItem.title = "Pager Example"
-
-        guard let tabBarView = pageTabBar.view else {
-            fatalError("PageTabBarController did not load its view")
-        }
-
+        
+        setupPalette()
+        setupToolbarItems()
+        updateEditButtonState()
+    }
+    
+    func setupPalette() {
         if #available(iOS 26.0, *) {
             let containerView = ScrollEdgeElementContainerView(content: pageTabBar.view)
             addChild(pageTabBar)
@@ -44,16 +46,15 @@ final class PageViewController: Pager.PageViewController, Pager.PageViewControll
             interaction.edge = .top
             containerView.addInteraction(interaction)
             collectionView.topEdgeEffect.style = .hard
-        } else if let palette = NavigationBarPalette(contentView: tabBarView) {
-            palette.setPreferredHeight(tabBarView.intrinsicContentSize.height)
-            navigationItem.setBottomPalette(palette)
-            itemContentInsets.top = 0
         } else {
-            fatalError("UINavigationBarPalette is unavailable")
+            if let palette = NavigationBarPalette(contentView: pageTabBar.view) {
+                palette.setPreferredHeight(pageTabBar.view.intrinsicContentSize.height)
+                navigationItem.setBottomPalette(palette)
+                itemContentInsets.top = 0
+            } else {
+                fatalError("UINavigationBarPalette is unavailable")
+            }
         }
-
-        setupToolbarItems()
-        updateEditButtonState()
     }
     
     func setupToolbarItems() {
