@@ -12,6 +12,7 @@ public final class PageTabBar: UIView, UIContentView {
         self.hostedContentView = UIHostingConfiguration {
             PageTabBarView()
                 .environment(state)
+                .ignoresSafeArea()
         }
         .makeContentView()
         self.configuration = hostedContentView.configuration
