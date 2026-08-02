@@ -6,29 +6,28 @@ import UIKit
 public final class PageTabBar: UIView, UIContentView {
     public var configuration: UIContentConfiguration
 
-    private let hostedContentView: UIView & UIContentView
+    private let hostingController: UIViewController
 
     public init(state: PageTabBarState) {
-        self.hostedContentView = UIHostingConfiguration {
-            PageTabBarView()
-                .environment(state)
-                .ignoresSafeArea()
-        }
-        .makeContentView()
-        self.configuration = hostedContentView.configuration
+        self.configuration = PageTabBarContentConfiguration(state: state)
+        let hostingController = UIHostingController(
+            rootView: PageTabBarView().environment(state)
+        )
+        hostingController.safeAreaRegions = []
+        self.hostingController = hostingController
         super.init(frame: .zero)
 
         backgroundColor = .clear
-        hostedContentView.layoutMargins = .zero
-        hostedContentView.preservesSuperviewLayoutMargins = false
-        hostedContentView.backgroundColor = .clear
-        hostedContentView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(hostedContentView)
+        hostingController.view.layoutMargins = .zero
+        hostingController.view.preservesSuperviewLayoutMargins = false
+        hostingController.view.backgroundColor = .clear
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(hostingController.view)
         NSLayoutConstraint.activate([
-            hostedContentView.topAnchor.constraint(equalTo: topAnchor),
-            hostedContentView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            hostedContentView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            hostedContentView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            hostingController.view.topAnchor.constraint(equalTo: topAnchor),
+            hostingController.view.leadingAnchor.constraint(equalTo: leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: trailingAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
 
@@ -37,5 +36,17 @@ public final class PageTabBar: UIView, UIContentView {
 
     public override var intrinsicContentSize: CGSize {
         CGSize(width: UIView.noIntrinsicMetric, height: 34)
+    }
+}
+
+private struct PageTabBarContentConfiguration: UIContentConfiguration {
+    let state: PageTabBarState
+
+    func makeContentView() -> UIView & UIContentView {
+        PageTabBar(state: state)
+    }
+
+    func updated(for state: UIConfigurationState) -> PageTabBarContentConfiguration {
+        self
     }
 }
