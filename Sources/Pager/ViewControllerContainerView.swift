@@ -27,6 +27,8 @@ open class ViewControllerContainerView: UIView {
         self.contentViewController = viewController
 
         super.init(frame: .zero)
+        
+        backgroundColor = .clear
     }
 
     public init<RootView: View>(
@@ -34,10 +36,13 @@ open class ViewControllerContainerView: UIView {
     ) {
         let hostingController = UIHostingController(rootView: rootView)
         hostingController.safeAreaRegions = []
+        hostingController.sizingOptions = [.intrinsicContentSize]
         hostingController.view.backgroundColor = .clear
         self.contentViewController = hostingController
 
         super.init(frame: .zero)
+        
+        backgroundColor = .clear
     }
 
     public required init?(coder: NSCoder) {
@@ -46,6 +51,7 @@ open class ViewControllerContainerView: UIView {
 
     open override func didMoveToSuperview() {
         super.didMoveToSuperview()
+        addContentViewIfNeeded()
         updateContainment()
     }
 
@@ -87,13 +93,16 @@ open class ViewControllerContainerView: UIView {
         )
 
         parentViewController.addChild(contentViewController)
-        addContentViewIfNeeded()
         contentViewController.didMove(toParent: parentViewController)
 
         installedParentViewController = parentViewController
     }
 
     private func addContentViewIfNeeded() {
+        guard superview != nil else {
+            return
+        }
+
         guard contentViewController.view.superview !== self else {
             return
         }

@@ -7,7 +7,6 @@ public final class PageTabBar: ViewControllerContainerView {
 
     public init(state: PageTabBarState) {
         super.init(rootView: PageTabBarView().environment(state))
-        backgroundColor = .clear
     }
 
     @available(*, unavailable)

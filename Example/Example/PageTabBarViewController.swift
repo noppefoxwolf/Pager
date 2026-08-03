@@ -47,6 +47,7 @@ final class PageTabBarViewController: Pager.PageViewController, Pager.PageViewCo
             containerView.addInteraction(interaction)
             collectionView.topEdgeEffect.style = .hard
         } else {
+            pageTabBar.automaticParentResolution = false
             if let palette = NavigationBarPalette(contentView: pageTabBar) {
                 palette.setPreferredHeight(pageTabBar.intrinsicContentSize.height)
                 navigationItem.setBottomPalette(palette)
