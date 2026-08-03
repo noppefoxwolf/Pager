@@ -6,6 +6,7 @@ open class ViewControllerContainerView: UIView {
 
     public let contentViewController: UIViewController
 
+    /// Set to `false` when using the iOS 18 palette APIs and provide `parentViewController` explicitly.
     public var automaticParentResolution: Bool = true {
         didSet {
             updateContainment()
