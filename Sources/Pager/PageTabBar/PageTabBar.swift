@@ -1,15 +1,12 @@
 import SwiftUI
 import UIKit
 
-/// UIKit content view that hosts the SwiftUI page tab bar.
+/// UIKit view that hosts the SwiftUI page tab bar.
 @MainActor
-public final class PageTabBar: UIView, UIContentView {
-    public var configuration: UIContentConfiguration
-
+public final class PageTabBar: UIView {
     private let hostingController: UIViewController
 
     public init(state: PageTabBarState) {
-        self.configuration = PageTabBarContentConfiguration(state: state)
         let hostingController = UIHostingController(
             rootView: PageTabBarView().environment(state)
         )
@@ -36,17 +33,5 @@ public final class PageTabBar: UIView, UIContentView {
 
     public override var intrinsicContentSize: CGSize {
         CGSize(width: UIView.noIntrinsicMetric, height: 34)
-    }
-}
-
-private struct PageTabBarContentConfiguration: UIContentConfiguration {
-    let state: PageTabBarState
-
-    func makeContentView() -> UIView & UIContentView {
-        PageTabBar(state: state)
-    }
-
-    func updated(for state: UIConfigurationState) -> PageTabBarContentConfiguration {
-        self
     }
 }
