@@ -36,7 +36,7 @@ open class ViewControllerContainerView: UIView {
         rootView: RootView,
     ) {
         let hostingController = UIHostingController(rootView: rootView)
-        hostingController.safeAreaRegions = []
+        hostingController.safeAreaRegions = .container
         hostingController.sizingOptions = [.intrinsicContentSize]
         hostingController.view.backgroundColor = .clear
         self.contentViewController = hostingController
