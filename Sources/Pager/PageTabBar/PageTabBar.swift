@@ -6,7 +6,11 @@ import UIKit
 public final class PageTabBar: ViewControllerContainerView {
 
     public init(state: PageTabBarState) {
-        super.init(rootView: PageTabBarView().environment(state))
+        let hostingController = SafeAreaPaddingHostingController(
+            rootView: PageTabBarView().environment(state),
+            ignoreSafeAreaPadding: .vertical
+        )
+        super.init(viewController: hostingController)
     }
 
     @available(*, unavailable)
