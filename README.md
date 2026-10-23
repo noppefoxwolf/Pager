@@ -71,6 +71,19 @@ final class PagesViewController: PageViewController {
 
 `pages` can be updated at runtime (append/remove) and the pager refreshes automatically through diffable data sources. The pager updates `state.position` while scrolling, and selecting a tab through `PageTabBar` scrolls the pager to the corresponding page.
 
+Pass SwiftUI content to `trailing` to add fixed items beside the scrolling tabs:
+
+```swift
+let pageTabBar = PageTabBar(state: state) {
+    Button("Add", systemImage: "plus") {
+        // Add a page.
+    }
+    .labelStyle(.iconOnly)
+}
+```
+
+The closure supports multiple views, including buttons and menus. The trailing content stays visible while the tabs scroll within the remaining width. `PageTabBar(state:)` continues to show only the tabs.
+
 ## Key types
 - `PageViewController`: horizontally paged collection view controller exposing `pages`, `state`, `itemContentInsets`, and `reloadData()`.
 - `Page`: page descriptor containing `id`, `title`, and a `viewControllerProvider`.

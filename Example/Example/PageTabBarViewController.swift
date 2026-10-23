@@ -1,10 +1,16 @@
 import Pager
+import SwiftUI
 import UIKit
 import os
 
 final class PageTabBarViewController: Pager.PageViewController, Pager.PageViewControllerDelegate {
 
-    lazy var pageTabBar = PageTabBar(state: state)
+    lazy var pageTabBar = PageTabBar(state: state) { [weak self] in
+        Button("Edit Title", systemImage: "pencil") { [weak self] in
+            self?.presentTitleEditor()
+        }
+        .labelStyle(.iconOnly)
+    }
     
     let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
