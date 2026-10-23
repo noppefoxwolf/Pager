@@ -19,13 +19,15 @@ struct PageTabBarView: View {
     private let spacing: CGFloat = 10
     private let horizontalInset: CGFloat = 20
     @State private var intrinsicWidth: CGFloat = 0
+    @State private var scrollMetrics = PageTabBarScrollMetrics()
 
     init() {}
 
     public var body: some View {
-        GeometryReader { container in
-            ScrollViewReader { proxy in
-                DistributionalScrollView(
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                DistributionalHStackLayout(
+                    viewportWidth: scrollMetrics.viewportWidth,
                     spacing: spacing,
                     horizontalInset: horizontalInset
                 ) {
@@ -39,27 +41,41 @@ struct PageTabBarView: View {
                         .id(page.id)
                     }
                 }
-                .coordinateSpace(name: PageTabBarCoordinateSpace.name)
-                .overlayPreferenceValue(PageTabBoundsPreferenceKey.self) { bounds in
-                    PageTabBarIndicator(
-                        bounds: bounds,
-                        pageIDs: state.pages.map(\.id),
-                        position: state.position
-                    )
+                .frame(minHeight: 34)
+            }
+            .scrollDisabled(intrinsicWidth <= scrollMetrics.viewportWidth)
+            .scrollIndicators(.hidden)
+            .onScrollGeometryChange(for: PageTabBarScrollMetrics.self) { geometry in
+                PageTabBarScrollMetrics(
+                    width: geometry.containerSize.width,
+                    leadingInset: geometry.contentInsets.leading,
+                    trailingInset: geometry.contentInsets.trailing
+                )
+            } action: { _, metrics in
+                scrollMetrics = metrics
+            }
+            .coordinateSpace(name: PageTabBarCoordinateSpace.name)
+            .overlayPreferenceValue(PageTabBoundsPreferenceKey.self) { bounds in
+                PageTabBarIndicator(
+                    bounds: bounds,
+                    pageIDs: state.pages.map(\.id),
+                    position: state.position
+                )
+            }
+            .onChange(of: selectedIndex) { _, index in
+                guard let pageID = state.pages[safe: index]?.id else { return }
+                withAnimation(.snappy) {
+                    proxy.scrollTo(pageID, anchor: .center)
                 }
-                .onChange(of: selectedIndex) { _, index in
-                    guard let pageID = state.pages[safe: index]?.id else { return }
-                    withAnimation(.snappy) {
-                        proxy.scrollTo(pageID, anchor: .center)
-                    }
-                }
-                .mask {
-                    PageTabBarEdgeMask(
-                        isScrollable: intrinsicWidth > container.size.width,
-                        fadeWidth: horizontalInset,
-                        height: container.size.height
-                    )
-                }
+            }
+            .mask {
+                PageTabBarEdgeMask(
+                    isScrollable: intrinsicWidth > scrollMetrics.viewportWidth,
+                    fadeWidth: horizontalInset,
+                    height: 34,
+                    leadingInset: scrollMetrics.leadingInset,
+                    trailingInset: scrollMetrics.trailingInset
+                )
             }
         }
         .background {
@@ -125,22 +141,36 @@ private struct PageTabBarIntrinsicContent: View {
     }
 }
 
+private struct PageTabBarScrollMetrics: Equatable {
+    var width: CGFloat = 0
+    var leadingInset: CGFloat = 0
+    var trailingInset: CGFloat = 0
+
+    var viewportWidth: CGFloat {
+        max(0, width - leadingInset - trailingInset)
+    }
+}
+
 private struct PageTabBarEdgeMask: View {
     let isScrollable: Bool
     let fadeWidth: CGFloat
     let height: CGFloat
+    let leadingInset: CGFloat
+    let trailingInset: CGFloat
 
     var body: some View {
         HStack(spacing: 0) {
+            Color.clear.frame(width: leadingInset)
             if isScrollable {
                 LinearGradient(colors: [.clear, .black], startPoint: .leading, endPoint: .trailing)
                     .frame(width: fadeWidth)
             }
             Color.black.frame(maxWidth: .infinity)
-            if isScrollable {
+            if isScrollable || trailingInset > 0 {
                 LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing)
                     .frame(width: fadeWidth)
             }
+            Color.clear.frame(width: trailingInset)
         }
         .frame(maxWidth: .infinity, maxHeight: height)
     }

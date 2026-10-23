@@ -10,7 +10,7 @@ public final class PageTabBar: ViewControllerContainerView {
     }
 
     /// Creates a tab bar with fixed content at its trailing edge.
-    /// The page tabs use the remaining width and scroll independently.
+    /// Reserves safe-area space while the tabs scroll beneath the trailing content.
     public init<Trailing: View>(
         state: PageTabBarState,
         @ViewBuilder trailing: () -> Trailing
@@ -37,15 +37,14 @@ private struct PageTabBarContent<Trailing: View>: View {
     let trailing: Trailing
 
     var body: some View {
-        HStack(spacing: 0) {
-            PageTabBarView()
-                .frame(maxWidth: .infinity)
-            HStack(spacing: 10) {
-                trailing
+        PageTabBarView()
+            .safeAreaInset(edge: .trailing, spacing: 0) {
+                HStack(spacing: 10) {
+                    trailing
+                }
+                .fixedSize(horizontal: true, vertical: false)
+                .padding(.trailing, Trailing.self == EmptyView.self ? 0 : 20)
             }
-            .fixedSize(horizontal: true, vertical: false)
-            .padding(.trailing, Trailing.self == EmptyView.self ? 0 : 20)
-        }
-        .frame(height: 34)
+            .frame(height: 34)
     }
 }

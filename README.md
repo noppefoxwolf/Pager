@@ -82,7 +82,7 @@ let pageTabBar = PageTabBar(state: state) {
 }
 ```
 
-The closure supports multiple views, including buttons and menus. The trailing content stays visible while the tabs scroll within the remaining width. `PageTabBar(state:)` continues to show only the tabs.
+The closure supports multiple views, including buttons and menus. The trailing content is placed using `safeAreaInset`. The scroll view extends beneath it, with a content inset that keeps the last tab accessible and a fade mask immediately before the trailing items. `PageTabBar(state:)` continues to show only the tabs.
 
 ## Key types
 - `PageViewController`: horizontally paged collection view controller exposing `pages`, `state`, `itemContentInsets`, and `reloadData()`.
