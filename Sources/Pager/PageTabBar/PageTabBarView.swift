@@ -48,7 +48,6 @@ struct PageTabBarView: View {
             .onScrollGeometryChange(for: PageTabBarScrollMetrics.self) { geometry in
                 PageTabBarScrollMetrics(
                     width: geometry.containerSize.width,
-                    leadingInset: geometry.contentInsets.leading,
                     trailingInset: geometry.contentInsets.trailing
                 )
             } action: { _, metrics in
@@ -73,8 +72,7 @@ struct PageTabBarView: View {
                     isScrollable: intrinsicWidth > scrollMetrics.viewportWidth,
                     fadeWidth: horizontalInset,
                     height: 34,
-                    leadingInset: scrollMetrics.leadingInset,
-                    trailingInset: scrollMetrics.trailingInset
+                    hasTrailingInset: scrollMetrics.trailingInset > 0
                 )
             }
         }
@@ -143,11 +141,12 @@ private struct PageTabBarIntrinsicContent: View {
 
 private struct PageTabBarScrollMetrics: Equatable {
     var width: CGFloat = 0
-    var leadingInset: CGFloat = 0
     var trailingInset: CGFloat = 0
 
     var viewportWidth: CGFloat {
-        max(0, width - leadingInset - trailingInset)
+        // ScrollGeometry reports the viewport inside the safe area. The
+        // content insets describe the space beyond that viewport.
+        max(0, width)
     }
 }
 
@@ -155,22 +154,22 @@ private struct PageTabBarEdgeMask: View {
     let isScrollable: Bool
     let fadeWidth: CGFloat
     let height: CGFloat
-    let leadingInset: CGFloat
-    let trailingInset: CGFloat
+    let hasTrailingInset: Bool
 
     var body: some View {
+        // The mask receives the same safe area as the scroll view. Its layout
+        // already ends before the trailing content; adding contentInsets here
+        // would reserve that space a second time.
         HStack(spacing: 0) {
-            Color.clear.frame(width: leadingInset)
             if isScrollable {
                 LinearGradient(colors: [.clear, .black], startPoint: .leading, endPoint: .trailing)
                     .frame(width: fadeWidth)
             }
             Color.black.frame(maxWidth: .infinity)
-            if isScrollable || trailingInset > 0 {
+            if isScrollable || hasTrailingInset {
                 LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing)
                     .frame(width: fadeWidth)
             }
-            Color.clear.frame(width: trailingInset)
         }
         .frame(maxWidth: .infinity, maxHeight: height)
     }
