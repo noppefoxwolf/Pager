@@ -6,21 +6,17 @@ import UIKit
 public final class PageTabBar: ViewControllerContainerView {
 
     public convenience init(state: PageTabBarState) {
-        self.init(state: state, content: PageTabBarView())
+        self.init(state: state) { EmptyView() }
     }
 
     /// Creates a tab bar with fixed content at its trailing edge.
     /// Reserves safe-area space while the tabs scroll beneath the trailing content.
-    public convenience init<Trailing: View>(
+    public init<Trailing: View>(
         state: PageTabBarState,
         @ViewBuilder trailing: () -> Trailing
     ) {
-        self.init(state: state, content: PageTabBarContent(trailing: trailing()))
-    }
-
-    private init<Content: View>(state: PageTabBarState, content: Content) {
         let hostingController = SafeAreaPaddingHostingController(
-            rootView: content.environment(state),
+            rootView: PageTabBarContent(trailing: trailing()).environment(state),
             ignoreSafeAreaPadding: .vertical
         )
         super.init(viewController: hostingController)
@@ -47,7 +43,6 @@ private struct PageTabBarContent<Trailing: View>: View {
                     trailing
                 }
                 .fixedSize(horizontal: true, vertical: false)
-                .padding(.trailing, 20)
             }
     }
 }
