@@ -104,7 +104,7 @@ let leadingOnly = PageTabBar(state: state, leading: {
 })
 ```
 
-Both edges use safe area insets, with 20 points of padding on the outer edge of the supplied content.
+Both edges use safe area insets, with 10 points of horizontal padding applied directly to the supplied content.
 
 ## Key types
 - `PageViewController`: horizontally paged collection view controller exposing `pages`, `state`, `itemContentInsets`, and `reloadData()`.
