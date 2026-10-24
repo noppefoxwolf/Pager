@@ -52,12 +52,14 @@ private struct PageTabBarContent<Leading: View, Trailing: View>: View {
             .safeAreaInset(edge: .leading, spacing: 0) {
                 HStack(spacing: 10) {
                     leading
+                        .padding(.leading, 20)
                 }
                 .fixedSize(horizontal: true, vertical: false)
             }
             .safeAreaInset(edge: .trailing, spacing: 0) {
                 HStack(spacing: 10) {
                     trailing
+                        .padding(.trailing, 20)
                 }
                 .fixedSize(horizontal: true, vertical: false)
             }
