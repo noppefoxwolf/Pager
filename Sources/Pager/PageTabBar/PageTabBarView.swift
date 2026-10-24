@@ -15,6 +15,8 @@ public final class PageTabBarState {
 /// SwiftUI implementation of the page selector.
 @MainActor
 struct PageTabBarView: View {
+    static let height: CGFloat = 34
+
     @Environment(PageTabBarState.self) private var state
     private let spacing: CGFloat = 10
     private let horizontalInset: CGFloat = 20
@@ -41,14 +43,14 @@ struct PageTabBarView: View {
                         .id(page.id)
                     }
                 }
-                .frame(minHeight: 34)
+                .frame(minHeight: Self.height)
             }
             .scrollDisabled(intrinsicWidth <= scrollMetrics.viewportWidth)
             .scrollIndicators(.hidden)
             .onScrollGeometryChange(for: PageTabBarScrollMetrics.self) { geometry in
                 PageTabBarScrollMetrics(
-                    width: geometry.containerSize.width,
-                    trailingInset: geometry.contentInsets.trailing
+                    viewportWidth: geometry.containerSize.width,
+                    hasTrailingInset: geometry.contentInsets.trailing > 0
                 )
             } action: { _, metrics in
                 scrollMetrics = metrics
@@ -71,8 +73,7 @@ struct PageTabBarView: View {
                 PageTabBarEdgeMask(
                     isScrollable: intrinsicWidth > scrollMetrics.viewportWidth,
                     fadeWidth: horizontalInset,
-                    height: 34,
-                    hasTrailingInset: scrollMetrics.trailingInset > 0
+                    hasTrailingInset: scrollMetrics.hasTrailingInset
                 )
             }
         }
@@ -86,7 +87,7 @@ struct PageTabBarView: View {
         .onPreferenceChange(PageTabBarIntrinsicWidthPreferenceKey.self) {
             intrinsicWidth = $0
         }
-        .frame(height: 34)
+        .frame(height: Self.height)
         .sensorySelectionFeedback(trigger: selectedIndex)
     }
 
@@ -140,20 +141,14 @@ private struct PageTabBarIntrinsicContent: View {
 }
 
 private struct PageTabBarScrollMetrics: Equatable {
-    var width: CGFloat = 0
-    var trailingInset: CGFloat = 0
-
-    var viewportWidth: CGFloat {
-        // ScrollGeometry reports the viewport inside the safe area. The
-        // content insets describe the space beyond that viewport.
-        max(0, width)
-    }
+    // The reported viewport width already excludes the safe area.
+    var viewportWidth: CGFloat = 0
+    var hasTrailingInset = false
 }
 
 private struct PageTabBarEdgeMask: View {
     let isScrollable: Bool
     let fadeWidth: CGFloat
-    let height: CGFloat
     let hasTrailingInset: Bool
 
     var body: some View {
@@ -171,7 +166,7 @@ private struct PageTabBarEdgeMask: View {
                     .frame(width: fadeWidth)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: height)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

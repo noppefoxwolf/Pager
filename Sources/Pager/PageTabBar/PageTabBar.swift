@@ -28,7 +28,7 @@ public final class PageTabBar: ViewControllerContainerView {
     }
 
     public override var intrinsicContentSize: CGSize {
-        CGSize(width: UIView.noIntrinsicMetric, height: 34)
+        CGSize(width: UIView.noIntrinsicMetric, height: PageTabBarView.height)
     }
 }
 
@@ -45,6 +45,5 @@ private struct PageTabBarContent<Trailing: View>: View {
                 .fixedSize(horizontal: true, vertical: false)
                 .padding(.trailing, Trailing.self == EmptyView.self ? 0 : 20)
             }
-            .frame(height: 34)
     }
 }
