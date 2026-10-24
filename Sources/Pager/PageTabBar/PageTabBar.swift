@@ -5,9 +5,28 @@ import UIKit
 @MainActor
 public final class PageTabBar: ViewControllerContainerView {
 
-    public init(state: PageTabBarState) {
+    public convenience init(state: PageTabBarState) {
+        self.init(state: state) { EmptyView() }
+    }
+
+    /// Creates a tab bar with fixed content at its trailing edge.
+    /// Reserves safe-area space while the tabs scroll beneath the trailing content.
+    public convenience init<Trailing: View>(
+        state: PageTabBarState,
+        @ViewBuilder trailing: () -> Trailing
+    ) {
+        self.init(state: state, leading: { EmptyView() }, trailing: trailing)
+    }
+
+    /// Creates a tab bar with fixed content at either edge.
+    /// Omit `trailing` to provide only leading content.
+    public init<Leading: View, Trailing: View>(
+        state: PageTabBarState,
+        @ViewBuilder leading: () -> Leading = { EmptyView() },
+        @ViewBuilder trailing: () -> Trailing = { EmptyView() }
+    ) {
         let hostingController = SafeAreaPaddingHostingController(
-            rootView: PageTabBarView().environment(state),
+            rootView: PageTabBarContent(leading: leading(), trailing: trailing()).environment(state),
             ignoreSafeAreaPadding: .vertical
         )
         super.init(viewController: hostingController)
@@ -19,6 +38,30 @@ public final class PageTabBar: ViewControllerContainerView {
     }
 
     public override var intrinsicContentSize: CGSize {
-        CGSize(width: UIView.noIntrinsicMetric, height: 34)
+        CGSize(width: UIView.noIntrinsicMetric, height: PageTabBarView.height)
+    }
+}
+
+@MainActor
+private struct PageTabBarContent<Leading: View, Trailing: View>: View {
+    let leading: Leading
+    let trailing: Trailing
+
+    var body: some View {
+        PageTabBarView()
+            .safeAreaInset(edge: .leading, spacing: 0) {
+                HStack(spacing: 10) {
+                    leading
+                        .padding(.horizontal, 10)
+                }
+                .fixedSize(horizontal: true, vertical: false)
+            }
+            .safeAreaInset(edge: .trailing, spacing: 0) {
+                HStack(spacing: 10) {
+                    trailing
+                        .padding(.horizontal, 10)
+                }
+                .fixedSize(horizontal: true, vertical: false)
+            }
     }
 }

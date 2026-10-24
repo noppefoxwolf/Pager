@@ -15,17 +15,21 @@ public final class PageTabBarState {
 /// SwiftUI implementation of the page selector.
 @MainActor
 struct PageTabBarView: View {
+    static let height: CGFloat = 34
+
     @Environment(PageTabBarState.self) private var state
     private let spacing: CGFloat = 10
     private let horizontalInset: CGFloat = 20
     @State private var intrinsicWidth: CGFloat = 0
+    @State private var scrollMetrics = PageTabBarScrollMetrics()
 
     init() {}
 
     public var body: some View {
-        GeometryReader { container in
-            ScrollViewReader { proxy in
-                DistributionalScrollView(
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                DistributionalHStackLayout(
+                    viewportWidth: scrollMetrics.viewportWidth,
                     spacing: spacing,
                     horizontalInset: horizontalInset
                 ) {
@@ -39,27 +43,40 @@ struct PageTabBarView: View {
                         .id(page.id)
                     }
                 }
-                .coordinateSpace(name: PageTabBarCoordinateSpace.name)
-                .overlayPreferenceValue(PageTabBoundsPreferenceKey.self) { bounds in
-                    PageTabBarIndicator(
-                        bounds: bounds,
-                        pageIDs: state.pages.map(\.id),
-                        position: state.position
-                    )
+                .frame(minHeight: Self.height)
+            }
+            .scrollDisabled(intrinsicWidth <= scrollMetrics.viewportWidth)
+            .scrollIndicators(.hidden)
+            .onScrollGeometryChange(for: PageTabBarScrollMetrics.self) { geometry in
+                PageTabBarScrollMetrics(
+                    viewportWidth: geometry.containerSize.width,
+                    hasLeadingInset: geometry.contentInsets.leading > 0,
+                    hasTrailingInset: geometry.contentInsets.trailing > 0
+                )
+            } action: { _, metrics in
+                scrollMetrics = metrics
+            }
+            .coordinateSpace(name: PageTabBarCoordinateSpace.name)
+            .overlayPreferenceValue(PageTabBoundsPreferenceKey.self) { bounds in
+                PageTabBarIndicator(
+                    bounds: bounds,
+                    pageIDs: state.pages.map(\.id),
+                    position: state.position
+                )
+            }
+            .onChange(of: selectedIndex) { _, index in
+                guard let pageID = state.pages[safe: index]?.id else { return }
+                withAnimation(.snappy) {
+                    proxy.scrollTo(pageID, anchor: .center)
                 }
-                .onChange(of: selectedIndex) { _, index in
-                    guard let pageID = state.pages[safe: index]?.id else { return }
-                    withAnimation(.snappy) {
-                        proxy.scrollTo(pageID, anchor: .center)
-                    }
-                }
-                .mask {
-                    PageTabBarEdgeMask(
-                        isScrollable: intrinsicWidth > container.size.width,
-                        fadeWidth: horizontalInset,
-                        height: container.size.height
-                    )
-                }
+            }
+            .mask {
+                PageTabBarEdgeMask(
+                    isScrollable: intrinsicWidth > scrollMetrics.viewportWidth,
+                    fadeWidth: horizontalInset,
+                    hasLeadingInset: scrollMetrics.hasLeadingInset,
+                    hasTrailingInset: scrollMetrics.hasTrailingInset
+                )
             }
         }
         .background {
@@ -72,7 +89,7 @@ struct PageTabBarView: View {
         .onPreferenceChange(PageTabBarIntrinsicWidthPreferenceKey.self) {
             intrinsicWidth = $0
         }
-        .frame(height: 34)
+        .frame(height: Self.height)
         .sensorySelectionFeedback(trigger: selectedIndex)
     }
 
@@ -125,24 +142,35 @@ private struct PageTabBarIntrinsicContent: View {
     }
 }
 
+private struct PageTabBarScrollMetrics: Equatable {
+    // The reported viewport width already excludes the safe area.
+    var viewportWidth: CGFloat = 0
+    var hasLeadingInset = false
+    var hasTrailingInset = false
+}
+
 private struct PageTabBarEdgeMask: View {
     let isScrollable: Bool
     let fadeWidth: CGFloat
-    let height: CGFloat
+    let hasLeadingInset: Bool
+    let hasTrailingInset: Bool
 
     var body: some View {
+        // The mask receives the same safe area as the scroll view. Its layout
+        // already excludes the edge content; adding contentInsets here
+        // would reserve that space a second time.
         HStack(spacing: 0) {
-            if isScrollable {
+            if isScrollable || hasLeadingInset {
                 LinearGradient(colors: [.clear, .black], startPoint: .leading, endPoint: .trailing)
                     .frame(width: fadeWidth)
             }
             Color.black.frame(maxWidth: .infinity)
-            if isScrollable {
+            if isScrollable || hasTrailingInset {
                 LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing)
                     .frame(width: fadeWidth)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: height)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
