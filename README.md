@@ -104,7 +104,18 @@ let leadingOnly = PageTabBar(state: state, leading: {
 })
 ```
 
-Both edges use safe area insets, with 10 points of horizontal padding applied directly to the supplied content.
+Both edges use safe area insets, with 10 points of horizontal padding applied directly to the supplied content by default. Pass `leadingPadding` and `trailingPadding` to customize each edge independently:
+
+```swift
+let pageTabBar = PageTabBar(state: state, leadingPadding: 16, trailingPadding: 8) {
+    Text("Pages")
+} trailing: {
+    Button("Add", systemImage: "plus") {
+        // Add a page.
+    }
+    .labelStyle(.iconOnly)
+}
+```
 
 ## Key types
 - `PageViewController`: horizontally paged collection view controller exposing `pages`, `state`, `itemContentInsets`, and `reloadData()`.
