@@ -50,6 +50,7 @@ struct PageTabBarView: View {
             .onScrollGeometryChange(for: PageTabBarScrollMetrics.self) { geometry in
                 PageTabBarScrollMetrics(
                     viewportWidth: geometry.containerSize.width,
+                    hasLeadingInset: geometry.contentInsets.leading > 0,
                     hasTrailingInset: geometry.contentInsets.trailing > 0
                 )
             } action: { _, metrics in
@@ -73,6 +74,7 @@ struct PageTabBarView: View {
                 PageTabBarEdgeMask(
                     isScrollable: intrinsicWidth > scrollMetrics.viewportWidth,
                     fadeWidth: horizontalInset,
+                    hasLeadingInset: scrollMetrics.hasLeadingInset,
                     hasTrailingInset: scrollMetrics.hasTrailingInset
                 )
             }
@@ -143,20 +145,22 @@ private struct PageTabBarIntrinsicContent: View {
 private struct PageTabBarScrollMetrics: Equatable {
     // The reported viewport width already excludes the safe area.
     var viewportWidth: CGFloat = 0
+    var hasLeadingInset = false
     var hasTrailingInset = false
 }
 
 private struct PageTabBarEdgeMask: View {
     let isScrollable: Bool
     let fadeWidth: CGFloat
+    let hasLeadingInset: Bool
     let hasTrailingInset: Bool
 
     var body: some View {
         // The mask receives the same safe area as the scroll view. Its layout
-        // already ends before the trailing content; adding contentInsets here
+        // already excludes the edge content; adding contentInsets here
         // would reserve that space a second time.
         HStack(spacing: 0) {
-            if isScrollable {
+            if isScrollable || hasLeadingInset {
                 LinearGradient(colors: [.clear, .black], startPoint: .leading, endPoint: .trailing)
                     .frame(width: fadeWidth)
             }

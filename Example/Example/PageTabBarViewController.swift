@@ -5,7 +5,12 @@ import os
 
 final class PageTabBarViewController: Pager.PageViewController, Pager.PageViewControllerDelegate {
 
-    lazy var pageTabBar = PageTabBar(state: state) { [weak self] in
+    lazy var pageTabBar = PageTabBar(state: state) {
+        Button("First Page", systemImage: "backward.end") { [weak self] in
+            self?.state.onSelect?(0)
+        }
+        .labelStyle(.iconOnly)
+    } trailing: { [weak self] in
         Button("Edit Title", systemImage: "pencil") { [weak self] in
             self?.presentTitleEditor()
         }
