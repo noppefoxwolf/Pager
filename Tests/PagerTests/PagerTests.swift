@@ -5,7 +5,11 @@ import UIKit
 
 @Suite(.serialized) @MainActor
 struct PagerTests {
-    @Test(arguments: [UIEdgeInsets.zero, UIEdgeInsets(top: 12, left: 7, bottom: 9, right: 11)])
+    @Test(arguments: [
+        UIEdgeInsets.zero,
+        UIEdgeInsets(top: 12, left: 7, bottom: 9, right: 11),
+        UIEdgeInsets(top: 0, left: -96, bottom: 0, right: -160),
+    ])
     func horizontalSafeAreaRemainsConstantWhilePaging(itemInsets: UIEdgeInsets) async throws {
         let children = (0..<3).map { _ in SafeAreaPageViewController() }
         let pages = children.enumerated()
@@ -20,6 +24,7 @@ struct PagerTests {
         pager.additionalSafeAreaInsets = UIEdgeInsets(top: 0, left: 48, bottom: 0, right: 32)
         pager.itemContentInsets = itemInsets
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 800, height: 600))
+        window.frame = try #require(window.windowScene).coordinateSpace.bounds
         window.rootViewController = pager
         window.makeKeyAndVisible()
         defer { window.isHidden = true }
@@ -34,10 +39,13 @@ struct PagerTests {
         for pagerInsets in [
             UIEdgeInsets(top: 0, left: 48, bottom: 0, right: 32),
             UIEdgeInsets(top: 16, left: 24, bottom: 8, right: 64),
+            .zero,
         ] {
             pager.additionalSafeAreaInsets = pagerInsets
             window.layoutIfNeeded()
-            let expected = pager.view.safeAreaInsets
+            var expected = pager.view.safeAreaInsets
+            expected.left = expected.left + max(0, itemInsets.left)
+            expected.right = expected.right + max(0, itemInsets.right)
             for position in [0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0, 1.5, 2.0, 1.0, 0.0] {
                 pager.collectionView.contentOffset.x = width * position
                 window.layoutIfNeeded()
@@ -51,26 +59,25 @@ struct PagerTests {
                     #expect(
                         abs(
                             child.scrollView.adjustedContentInset.left - expected.left
-                                - itemInsets.left
                         ) < 1
                     )
                     #expect(
                         abs(
                             child.scrollView.adjustedContentInset.right - expected.right
-                                - itemInsets.right
                         ) < 1
                     )
                     #expect(abs(child.view.safeAreaInsets.top - expected.top - itemInsets.top) < 1)
                     #expect(
                         abs(child.view.safeAreaInsets.bottom - expected.bottom - itemInsets.bottom)
-                            < 1
+                            < 1,
+                        "position \(position): child \(child.view.safeAreaInsets), parent \(expected), item \(itemInsets)"
                     )
                     #expect(
-                        abs(child.view.safeAreaInsets.left - expected.left - itemInsets.left) < 1,
+                        abs(child.view.safeAreaInsets.left - expected.left) < 1,
                         "position \(position), page \(indexPath.item), left \(child.view.safeAreaInsets)"
                     )
                     #expect(
-                        abs(child.view.safeAreaInsets.right - expected.right - itemInsets.right)
+                        abs(child.view.safeAreaInsets.right - expected.right)
                             < 1,
                         "position \(position), page \(indexPath.item), right \(child.view.safeAreaInsets)"
                     )

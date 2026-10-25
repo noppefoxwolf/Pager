@@ -3,10 +3,17 @@ import UIKit
 // workaround: 直接additionalSafeAreaInsetsを触らないようにするために、PageItemViewControllerを噛ませる
 final class PageItemViewController: UIViewController {
     let viewController: UIViewController
+    private let horizontalSafeAreaInsetsProvider: () -> UIEdgeInsets
 
-    init(viewController: UIViewController) {
+    init(
+        viewController: UIViewController,
+        contentInsets: UIEdgeInsets,
+        horizontalSafeAreaInsetsProvider: @escaping () -> UIEdgeInsets
+    ) {
         self.viewController = viewController
+        self.horizontalSafeAreaInsetsProvider = horizontalSafeAreaInsetsProvider
         super.init(nibName: nil, bundle: nil)
+        additionalSafeAreaInsets = contentInsets
     }
 
     required init?(coder: NSCoder) {
@@ -29,16 +36,13 @@ final class PageItemViewController: UIViewController {
 
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        guard let pager = parent as? PageViewController,
-            let contentView = viewIfLoaded?.superview
-        else { return }
-        let pagerInsets = pager.view.safeAreaInsets
-        let inheritedInsets = contentView.safeAreaInsets
-        var insets = pager.itemContentInsets
-        // Compensate for UIKit's viewport intersection so both pages retain
-        // the pager's horizontal safe area throughout an interactive swipe.
-        insets.left += pagerInsets.left - inheritedInsets.left
-        insets.right += pagerInsets.right - inheritedInsets.right
+        // UIKit changes a moving page's inherited safe area. Correct this
+        // controller's measured insets to the horizontal target owned by the pager.
+        let desiredInsets = horizontalSafeAreaInsetsProvider()
+        let currentInsets = view.safeAreaInsets
+        var insets = additionalSafeAreaInsets
+        insets.left += desiredInsets.left - currentInsets.left
+        insets.right += desiredInsets.right - currentInsets.right
         if additionalSafeAreaInsets != insets {
             additionalSafeAreaInsets = insets
         }
