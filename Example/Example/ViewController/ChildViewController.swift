@@ -39,8 +39,8 @@ final class ChildViewController: UIViewController {
                 equalTo: view.safeAreaLayoutGuide.leadingAnchor,
                 constant: 20
             ),
-            view.trailingAnchor.constraint(
-                equalTo: stackView.safeAreaLayoutGuide.trailingAnchor,
+            view.safeAreaLayoutGuide.trailingAnchor.constraint(
+                equalTo: stackView.trailingAnchor,
                 constant: 20
             ),
         ])
