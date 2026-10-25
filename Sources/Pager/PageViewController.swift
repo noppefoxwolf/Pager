@@ -170,28 +170,13 @@ open class PageViewController: WorkaroundCollectionViewController {
     }
     
     open override func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        setNeedsLayoutForCurrentPageContainer()
         setCurrentContentScrollView()
         delegate?.didFinishTransition(self)
     }
 
     open override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        setNeedsLayoutForCurrentPageContainer()
         setCurrentContentScrollView()
         delegate?.didFinishTransition(self)
-    }
-
-    private func setNeedsLayoutForCurrentPageContainer() {
-        guard let indexPath = indexPathForCenterItem,
-              let cell = collectionView.cellForItem(at: indexPath),
-              let configuration = cell.contentConfiguration as? ViewControllerContentConfiguration,
-              let container = configuration.viewController as? PageItemViewController,
-              let containerView = container.viewIfLoaded else { return }
-
-        // A reused page can retain the safe area from its offscreen position.
-        // Request layout on the container so UIKit can propagate its current
-        // safe area to the child even when neither view's bounds have changed.
-        containerView.setNeedsLayout()
     }
 
     open override func collectionView(
