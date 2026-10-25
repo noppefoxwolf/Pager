@@ -23,6 +23,11 @@ final class ViewControllerContentView: UIView, UIContentView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func safeAreaInsetsDidChange() {
+        super.safeAreaInsetsDidChange()
+        ownConfiguration.viewController.viewIfLoaded?.setNeedsLayout()
+    }
+
     override func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
         if newSuperview != nil {
