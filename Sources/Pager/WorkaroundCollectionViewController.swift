@@ -77,9 +77,6 @@ open class CollectionViewController: UIViewController, UICollectionViewDelegate 
     open func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
     }
 
-    open func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-    }
-
     open func collectionView(
         _ collectionView: UICollectionView,
         willDisplay cell: UICollectionViewCell,
