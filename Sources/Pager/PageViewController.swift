@@ -93,7 +93,7 @@ open class PageViewController: WorkaroundCollectionViewController {
             }
             let contentViewController = page.viewController
             let viewController = PageItemViewController(viewController: contentViewController)
-            viewController.itemContentInsets = itemContentInsets
+            viewController.additionalSafeAreaInsets = itemContentInsets
             cell.contentConfiguration = cell.viewControllerConfiguration(
                 viewController: viewController,
                 parent: self
