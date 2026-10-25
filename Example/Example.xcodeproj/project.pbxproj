@@ -6,12 +6,24 @@
 	objectVersion = 90;
 	objects = {
 
+/* Begin PBXTargetDependency section */
+		A10000000000000000000006 = {isa = PBXTargetDependency; target = 000000000000000100000000; targetProxy = A10000000000000000000005; };
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		A10000000000000000000005 = {isa = PBXContainerItemProxy; containerPortal = 000000000000000000000000; proxyType = 1; remoteGlobalIDString = 000000000000000100000000; remoteInfo = Example; };
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXBuildFile section */
 		3793627B3011EE8E00E7B102 /* Pager in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000210000000 /* Pager */; };
+		A10000000000000000000001 = {isa = PBXBuildFile; fileRef = A10000000000000000000002; };
+		A10000000000000000000003 = {isa = PBXBuildFile; productRef = 000000000000000210000000; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleTests/PagingLayoutTests.swift; sourceTree = SOURCE_ROOT; };
+		A10000000000000000000004 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = ExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -42,12 +54,14 @@
 				3793627B3011EE8E00E7B102 /* Pager in Frameworks */,
 			);
 		};
+		A10000000000000000000008 = {isa = PBXFrameworksBuildPhase; files = (A10000000000000000000003,); };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+				A10000000000000000000002,
 				000000000000000000000010 /* Example */,
 				000000000000000000000020 /* Products */,
 			);
@@ -56,6 +70,7 @@
 		000000000000000000000020 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				A10000000000000000000004,
 				000000000000000000000120 /* Example.app */,
 			);
 			name = Products;
@@ -75,6 +90,7 @@
 			buildRules = (
 			);
 			fileSystemSynchronizedGroups = (
+				A10000000000000000000002,
 				000000000000000000000010 /* Example */,
 			);
 			name = Example;
@@ -84,6 +100,18 @@
 			productName = MyApp;
 			productReference = 000000000000000000000120 /* Example.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A10000000000000000000009 /* ExampleTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000000000000000000010;
+			buildPhases = (A10000000000000000000007, A10000000000000000000008,);
+			buildRules = ();
+			dependencies = (A10000000000000000000006,);
+			name = ExampleTests;
+			packageProductDependencies = (000000000000000210000000,);
+			productName = ExampleTests;
+			productReference = A10000000000000000000004;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -117,6 +145,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				A10000000000000000000009,
 				000000000000000100000000 /* Example */,
 			);
 		};
@@ -136,6 +165,7 @@
 			files = (
 			);
 		};
+		A10000000000000000000007 = {isa = PBXSourcesBuildPhase; files = (A10000000000000000000001,); };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
@@ -353,6 +383,38 @@
 			};
 			name = Release;
 		};
+		A10000000000000000000011 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				PRODUCT_BUNDLE_IDENTIFIER = devplaceholder.Pager.ExampleTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Example";
+			};
+			name = Debug;
+		};
+		A10000000000000000000012 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				PRODUCT_BUNDLE_IDENTIFIER = devplaceholder.Pager.ExampleTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Example";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -372,6 +434,7 @@
 			);
 			defaultConfigurationName = Release;
 		};
+		A10000000000000000000010 = {isa = XCConfigurationList; buildConfigurations = (A10000000000000000000011, A10000000000000000000012,); defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */

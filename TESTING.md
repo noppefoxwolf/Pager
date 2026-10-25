@@ -102,3 +102,27 @@ done
 
 **Use `xcodebuild` instead** as documented above for proper iOS testing and building.
 
+
+## Paging regression tests
+
+The package tests check intermediate offsets, revisiting pages, changing parent safe
+areas, and positive/negative custom page insets:
+
+```bash
+xcodebuild -scheme Pager -destination 'platform=iOS Simulator,name=iPhone 17' test
+```
+
+Run the Example's hosted tests to check scrolling in a real foreground scene.
+These tests sample animated page transitions and scroll-view adjusted insets without
+calling `layoutIfNeeded()`, change the parent safe area without resizing, and verify
+that child layout counts stop increasing after scrolling settles:
+
+```bash
+xcodebuild -project Example/Example.xcodeproj -scheme Example \
+  -destination 'platform=iOS Simulator,name=iPhone 17' test
+```
+
+Run both commands with an iPhone Duo destination as well. The hosted test asserts
+that intermediate scroll positions were actually observed; a test environment that
+does not run scroll animations cannot silently pass. Use sim-use for gesture and
+fold/unfold checks in the Example's Seeded tab.
