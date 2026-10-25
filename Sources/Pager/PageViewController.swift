@@ -92,22 +92,8 @@ open class PageViewController: WorkaroundCollectionViewController {
                 return
             }
             let contentViewController = page.viewController
-            var contentInsets = itemContentInsets
-            // Additional safe-area insets extend the safe area; negative values
-            // cannot shrink UIKit's inherited insets.
-            contentInsets.left = max(0, contentInsets.left)
-            contentInsets.right = max(0, contentInsets.right)
-            let viewController = PageItemViewController(
-                viewController: contentViewController,
-                contentInsets: contentInsets,
-                horizontalSafeAreaInsetsProvider: { [weak self, contentInsets] in
-                    guard let self else { return contentInsets }
-                    var insets = view.safeAreaInsets
-                    insets.left += contentInsets.left
-                    insets.right += contentInsets.right
-                    return insets
-                }
-            )
+            let viewController = PageItemViewController(viewController: contentViewController)
+            viewController.additionalSafeAreaInsets = itemContentInsets
             cell.contentConfiguration = cell.viewControllerConfiguration(
                 viewController: viewController,
                 parent: self

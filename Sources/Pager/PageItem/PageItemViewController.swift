@@ -3,17 +3,10 @@ import UIKit
 // workaround: 直接additionalSafeAreaInsetsを触らないようにするために、PageItemViewControllerを噛ませる
 final class PageItemViewController: UIViewController {
     let viewController: UIViewController
-    private let horizontalSafeAreaInsetsProvider: () -> UIEdgeInsets
 
-    init(
-        viewController: UIViewController,
-        contentInsets: UIEdgeInsets,
-        horizontalSafeAreaInsetsProvider: @escaping () -> UIEdgeInsets
-    ) {
+    init(viewController: UIViewController) {
         self.viewController = viewController
-        self.horizontalSafeAreaInsetsProvider = horizontalSafeAreaInsetsProvider
         super.init(nibName: nil, bundle: nil)
-        additionalSafeAreaInsets = contentInsets
     }
 
     required init?(coder: NSCoder) {
@@ -36,13 +29,18 @@ final class PageItemViewController: UIViewController {
 
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        // UIKit changes a moving page's inherited safe area. Correct this
-        // controller's measured insets to the horizontal target owned by the pager.
-        let desiredInsets = horizontalSafeAreaInsetsProvider()
+        guard let pager = parent as? PageViewController else { return }
+        let targetInsets = pager.view.safeAreaInsets
+        let contentInsets = pager.itemContentInsets
         let currentInsets = view.safeAreaInsets
         var insets = additionalSafeAreaInsets
-        insets.left += desiredInsets.left - currentInsets.left
-        insets.right += desiredInsets.right - currentInsets.right
+        // Keep page content margins stable as the page moves through the viewport.
+        insets.left =
+            max(0, insets.left) + targetInsets.left
+            + max(0, contentInsets.left) - currentInsets.left
+        insets.right =
+            max(0, insets.right) + targetInsets.right
+            + max(0, contentInsets.right) - currentInsets.right
         if additionalSafeAreaInsets != insets {
             additionalSafeAreaInsets = insets
         }
