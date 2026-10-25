@@ -27,8 +27,11 @@ final class PageItemViewController: UIViewController {
         ])
     }
 
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
+    // Correct the inherited area before UIKit propagates it to the child. Waiting until
+    // viewWillLayoutSubviews lets offscreen pages publish a transient horizontal inset,
+    // which can make hosted text reflow even when the final layout has the right width.
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
         guard let pager = parent as? PageViewController else { return }
         let targetInsets = pager.view.safeAreaInsets
         let contentInsets = pager.itemContentInsets
