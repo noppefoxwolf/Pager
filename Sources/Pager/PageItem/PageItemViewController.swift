@@ -27,6 +27,34 @@ final class PageItemViewController: UIViewController {
         ])
     }
 
+    var itemContentInsets: UIEdgeInsets = .zero {
+        didSet { updateHorizontalSafeArea() }
+    }
+
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        updateHorizontalSafeArea()
+    }
+
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        updateHorizontalSafeArea()
+    }
+
+    private func updateHorizontalSafeArea() {
+        guard let parent, let contentView = viewIfLoaded?.superview else { return }
+        let pagerInsets = parent.view.safeAreaInsets
+        let inheritedInsets = contentView.safeAreaInsets
+        var insets = itemContentInsets
+        // Compensate for UIKit's viewport intersection so both pages retain
+        // the pager's horizontal safe area throughout an interactive swipe.
+        insets.left += pagerInsets.left - inheritedInsets.left
+        insets.right += pagerInsets.right - inheritedInsets.right
+        if additionalSafeAreaInsets != insets {
+            additionalSafeAreaInsets = insets
+        }
+    }
+
     override func contentScrollView(for edge: NSDirectionalRectEdge) -> UIScrollView? {
         guard isViewLoaded else { return nil }
         guard viewController.isViewLoaded else { return nil }
