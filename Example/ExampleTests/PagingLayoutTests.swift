@@ -115,6 +115,8 @@ struct PagingLayoutTests {
                     - max(0, contentInsets.right)
             ) < 1
         )
+        let layoutMismatches = children.flatMap(\.layoutMismatches)
+        #expect(layoutMismatches.isEmpty, "\(layoutMismatches.prefix(10))")
         let settledLayoutCount = children.reduce(0) { $0 + $1.layoutCount }
         try await Task.sleep(for: .milliseconds(200))
         #expect(children.reduce(0) { $0 + $1.layoutCount } == settledLayoutCount)
@@ -125,6 +127,40 @@ struct PagingLayoutTests {
 private final class ObservedPageViewController: UIViewController {
     let scrollView = UIScrollView()
     var layoutCount = 0
+    let label = UILabel()
+    var layoutMismatches: [String] = []
+
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        guard let pager = parent?.parent as? PageViewController,
+            view.window != nil, view.bounds.width > 0,
+            view.convert(view.bounds, to: pager.view).intersects(pager.view.bounds)
+        else { return }
+        let expected = pager.view.safeAreaInsets
+        let insets = pager.itemContentInsets
+        if abs(view.safeAreaInsets.left - expected.left - max(0, insets.left)) > 0.01
+            || abs(view.safeAreaInsets.right - expected.right - max(0, insets.right)) > 0.01
+        {
+            layoutMismatches.append(
+                "safe-area notification \(view.safeAreaInsets), parent \(expected)"
+            )
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        guard let pager = parent?.parent as? PageViewController,
+            view.window != nil, view.bounds.width > 0,
+            view.convert(view.bounds, to: pager.view).intersects(pager.view.bounds)
+        else { return }
+        let expectedWidth =
+            view.bounds.width - pager.view.safeAreaInsets.left
+            - pager.view.safeAreaInsets.right - max(0, pager.itemContentInsets.left)
+            - max(0, pager.itemContentInsets.right)
+        if abs(label.bounds.width - expectedWidth) > 0.01 {
+            layoutMismatches.append("text width \(label.bounds.width), expected \(expectedWidth)")
+        }
+    }
 
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
@@ -141,6 +177,15 @@ private final class ObservedPageViewController: UIViewController {
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+        label.numberOfLines = 0
+        label.text = String(repeating: "ページをスワイプしても改行位置が変わらないことを確認します。", count: 8)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            label.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            label.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
         ])
         scrollView.contentSize = CGSize(width: 800, height: 2000)
     }
