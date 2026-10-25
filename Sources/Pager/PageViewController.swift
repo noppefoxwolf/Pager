@@ -142,6 +142,7 @@ open class PageViewController: WorkaroundCollectionViewController {
 
         dataSource.apply(snapshot, animatingDifferences: false) { [weak self] in
             guard let self else { return }
+            layoutCurrentPageContainer()
             if !diff.isEmpty {
                 delegate?.didFinishTransition(self)
             }
@@ -165,18 +166,43 @@ open class PageViewController: WorkaroundCollectionViewController {
 
     open override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        layoutCurrentPageContainer()
         setCurrentContentScrollView()
         update(percentComplete)
     }
     
     open override func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        finishTransition()
+    }
+
+    open override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        finishTransition()
+    }
+
+    open override func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        if !decelerate {
+            finishTransition()
+        }
+    }
+
+    private func finishTransition() {
+        layoutCurrentPageContainer()
         setCurrentContentScrollView()
         delegate?.didFinishTransition(self)
     }
 
-    open override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        setCurrentContentScrollView()
-        delegate?.didFinishTransition(self)
+    private func layoutCurrentPageContainer() {
+        guard let indexPath = indexPathForCenterItem,
+              let cell = collectionView.cellForItem(at: indexPath),
+              let configuration = cell.contentConfiguration as? ViewControllerContentConfiguration,
+              let container = configuration.viewController as? PageItemViewController,
+              let containerView = container.viewIfLoaded else { return }
+
+        // A reused page can retain the safe area from its offscreen position.
+        // Lay out the container itself so UIKit propagates its current safe area
+        // to the child, even when neither view's bounds have changed.
+        containerView.setNeedsLayout()
+        containerView.layoutIfNeeded()
     }
 
     open override func collectionView(
