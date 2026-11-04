@@ -28,10 +28,13 @@ final class ViewControllerContentView: UIView, UIContentView {
         ownConfiguration.viewController.viewIfLoaded?.setNeedsLayout()
     }
 
-    override func didMoveToSuperview() {
-        super.didMoveToSuperview()
-        guard superview != nil else { return }
-        install(ownConfiguration)
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window == nil {
+            uninstall(ownConfiguration)
+        } else {
+            install(ownConfiguration)
+        }
     }
 
     func onConfigurationChanged(
@@ -39,38 +42,37 @@ final class ViewControllerContentView: UIView, UIContentView {
         newValue newConfiguration: UIContentConfiguration
     ) {
         if let configuration = configuration as? ViewControllerContentConfiguration {
-            configuration.viewController.willMove(toParent: nil)
-            configuration.viewController.viewIfLoaded?.removeFromSuperview()
-            configuration.viewController.removeFromParent()
+            uninstall(configuration)
         }
-
         if let configuration = newConfiguration as? ViewControllerContentConfiguration {
             install(configuration)
         }
     }
 
     private func install(_ configuration: ViewControllerContentConfiguration) {
-        guard superview != nil else { return }
+        guard window != nil, let parent = configuration.parent else { return }
+        let controller = configuration.viewController
+        guard controller.parent == nil else { return }
 
-        if let parent = configuration.parent,
-           configuration.viewController.parent !== parent {
-            parent.addChild(configuration.viewController)
-        }
-
-        configuration.viewController.loadViewIfNeeded()
-        guard let contentView = configuration.viewController.viewIfLoaded else { return }
-        guard contentView.superview !== self else { return }
-
+        parent.addChild(controller)
+        controller.loadViewIfNeeded()
+        guard let contentView = controller.viewIfLoaded else { return }
         contentView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(contentView)
-        NSLayoutConstraint.activate(
-            [
-                contentView.topAnchor.constraint(equalTo: topAnchor),
-                bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-                contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
-                trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            ]
-        )
-        configuration.viewController.didMove(toParent: configuration.parent)
+        NSLayoutConstraint.activate([
+            contentView.topAnchor.constraint(equalTo: topAnchor),
+            bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+        ])
+        controller.didMove(toParent: parent)
+    }
+
+    private func uninstall(_ configuration: ViewControllerContentConfiguration) {
+        let controller = configuration.viewController
+        guard controller.parent != nil else { return }
+        controller.willMove(toParent: nil)
+        controller.viewIfLoaded?.removeFromSuperview()
+        controller.removeFromParent()
     }
 }
