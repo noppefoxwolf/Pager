@@ -43,7 +43,7 @@ final class ViewControllerContentView: UIView, UIContentView {
     ) {
         if let configuration = configuration as? ViewControllerContentConfiguration {
             configuration.viewController.willMove(toParent: nil)
-            configuration.viewController.view.removeFromSuperview()
+            configuration.viewController.viewIfLoaded?.removeFromSuperview()
             configuration.viewController.removeFromParent()
         }
 
