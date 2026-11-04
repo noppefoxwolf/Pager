@@ -2,9 +2,33 @@ import Testing
 import UIKit
 
 @testable import Pager
+@testable import ViewControllerContentConfiguration
 
 @Suite(.serialized) @MainActor
 struct PagerTests {
+    @Test
+    func contentConfigurationLoadsOnlyAfterWindowAttachment() throws {
+        let parent = UIViewController()
+        let child = SafeAreaPageViewController()
+        let configuration = ViewControllerContentConfiguration(
+            viewController: child,
+            parent: parent
+        )
+        let contentView = configuration.makeContentView()
+
+        parent.view.addSubview(contentView)
+        #expect(!child.isViewLoaded)
+        #expect(child.parent == nil)
+
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+        window.rootViewController = parent
+        #expect(child.isViewLoaded)
+        #expect(child.parent === parent)
+
+        contentView.removeFromSuperview()
+        #expect(child.parent == nil)
+    }
+
     @Test(arguments: [
         UIEdgeInsets.zero,
         UIEdgeInsets(top: 12, left: 7, bottom: 9, right: 11),

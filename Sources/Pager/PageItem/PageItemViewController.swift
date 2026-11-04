@@ -16,14 +16,16 @@ final class PageItemViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         addChild(viewController)
-        view.addSubview(viewController.view)
+        viewController.loadViewIfNeeded()
+        guard let contentView = viewController.viewIfLoaded else { return }
+        view.addSubview(contentView)
         viewController.didMove(toParent: self)
-        viewController.view.translatesAutoresizingMaskIntoConstraints = false
+        contentView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            viewController.view.topAnchor.constraint(equalTo: view.topAnchor),
-            view.bottomAnchor.constraint(equalTo: viewController.view.bottomAnchor),
-            viewController.view.leftAnchor.constraint(equalTo: view.leftAnchor),
-            view.rightAnchor.constraint(equalTo: viewController.view.rightAnchor),
+            contentView.topAnchor.constraint(equalTo: view.topAnchor),
+            view.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            contentView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            view.rightAnchor.constraint(equalTo: contentView.rightAnchor),
         ])
     }
 

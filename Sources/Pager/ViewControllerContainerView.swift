@@ -53,13 +53,13 @@ open class ViewControllerContainerView: UIView {
 
     open override func didMoveToSuperview() {
         super.didMoveToSuperview()
-        addContentViewIfNeeded()
         updateContainment()
     }
 
     open override func didMoveToWindow() {
         super.didMoveToWindow()
         updateContainment()
+        addContentViewIfNeeded()
     }
 
     private func updateContainment() {
@@ -101,22 +101,24 @@ open class ViewControllerContainerView: UIView {
     }
 
     private func addContentViewIfNeeded() {
-        guard superview != nil else {
+        guard window != nil, contentViewController.parent != nil else {
             return
         }
 
-        guard contentViewController.view.superview !== self else {
+        if contentViewController.viewIfLoaded?.superview === self {
             return
         }
 
-        addSubview(contentViewController.view)
-        contentViewController.view.translatesAutoresizingMaskIntoConstraints = false
+        contentViewController.loadViewIfNeeded()
+        guard let contentView = contentViewController.viewIfLoaded else { return }
+        addSubview(contentView)
+        contentView.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            contentViewController.view.topAnchor.constraint(equalTo: topAnchor),
-            contentViewController.view.leadingAnchor.constraint(equalTo: leadingAnchor),
-            contentViewController.view.trailingAnchor.constraint(equalTo: trailingAnchor),
-            contentViewController.view.bottomAnchor.constraint(equalTo: bottomAnchor)
+            contentView.topAnchor.constraint(equalTo: topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
 

@@ -34,7 +34,7 @@ let package = Package(
         ),
         .testTarget(
             name: "PagerTests",
-            dependencies: ["Pager"]
+            dependencies: ["Pager", "ViewControllerContentConfiguration"]
         ),
     ]
 )
