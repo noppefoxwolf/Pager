@@ -48,12 +48,12 @@ final class ViewControllerContentView: UIView, UIContentView {
         }
 
         if let configuration = newConfiguration as? ViewControllerContentConfiguration {
-            let contentView = configuration.viewController.view!
-            contentView.translatesAutoresizingMaskIntoConstraints = false
-
             configuration.parent?.addChild(configuration.viewController)
 
-            addSubview(configuration.viewController.view)
+            let contentView = configuration.viewController.view
+            contentView.translatesAutoresizingMaskIntoConstraints = false
+
+            addSubview(contentView)
             NSLayoutConstraint.activate(
                 [
                     contentView.topAnchor.constraint(
