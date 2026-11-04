@@ -201,6 +201,6 @@ private extension PageViewController {
 
 private extension UIViewController {
     var rootScrollView: UIScrollView? {
-        view as? UIScrollView
+        viewIfLoaded as? UIScrollView
     }
 }
