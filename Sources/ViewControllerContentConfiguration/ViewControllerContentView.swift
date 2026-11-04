@@ -49,8 +49,9 @@ final class ViewControllerContentView: UIView, UIContentView {
 
         if let configuration = newConfiguration as? ViewControllerContentConfiguration {
             configuration.parent?.addChild(configuration.viewController)
+            configuration.viewController.loadViewIfNeeded()
 
-            let contentView = configuration.viewController.view
+            let contentView = configuration.viewController.viewIfLoaded!
             contentView.translatesAutoresizingMaskIntoConstraints = false
 
             addSubview(contentView)
