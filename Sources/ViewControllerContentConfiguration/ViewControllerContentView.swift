@@ -31,9 +31,9 @@ final class ViewControllerContentView: UIView, UIContentView {
     override func didMoveToWindow() {
         super.didMoveToWindow()
         if window == nil {
-            uninstall(ownConfiguration)
+            removeViewController(for: ownConfiguration)
         } else {
-            install(ownConfiguration)
+            addViewController(for: ownConfiguration)
         }
     }
 
@@ -42,14 +42,14 @@ final class ViewControllerContentView: UIView, UIContentView {
         newValue newConfiguration: UIContentConfiguration
     ) {
         if let configuration = configuration as? ViewControllerContentConfiguration {
-            uninstall(configuration)
+            removeViewController(for: configuration)
         }
         if let configuration = newConfiguration as? ViewControllerContentConfiguration {
-            install(configuration)
+            addViewController(for: configuration)
         }
     }
 
-    private func install(_ configuration: ViewControllerContentConfiguration) {
+    private func addViewController(for configuration: ViewControllerContentConfiguration) {
         guard window != nil, let parent = configuration.parent else { return }
         let controller = configuration.viewController
         guard controller.parent == nil else { return }
@@ -68,7 +68,7 @@ final class ViewControllerContentView: UIView, UIContentView {
         controller.didMove(toParent: parent)
     }
 
-    private func uninstall(_ configuration: ViewControllerContentConfiguration) {
+    private func removeViewController(for configuration: ViewControllerContentConfiguration) {
         let controller = configuration.viewController
         guard controller.parent != nil else { return }
         controller.willMove(toParent: nil)

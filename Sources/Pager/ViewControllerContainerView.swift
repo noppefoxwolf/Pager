@@ -69,13 +69,13 @@ open class ViewControllerContainerView: UIView {
             return
         }
 
-        uninstallViewController()
+        removeContentViewController()
 
         guard let resolvedParent else {
             return
         }
 
-        installViewController(in: resolvedParent)
+        addContentViewController(to: resolvedParent)
     }
 
     private func resolveParentViewController() -> UIViewController? {
@@ -86,8 +86,8 @@ open class ViewControllerContainerView: UIView {
         return parentViewController
     }
 
-    private func installViewController(
-        in parentViewController: UIViewController
+    private func addContentViewController(
+        to parentViewController: UIViewController
     ) {
         precondition(
             contentViewController.parent == nil,
@@ -122,7 +122,7 @@ open class ViewControllerContainerView: UIView {
         ])
     }
 
-    private func uninstallViewController() {
+    private func removeContentViewController() {
         guard contentViewController.parent != nil else {
             installedParentViewController = nil
             return
